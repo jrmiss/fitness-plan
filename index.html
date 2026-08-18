@@ -784,7 +784,7 @@ body {
         <li><strong>肌酸剂量：</strong>每日 5g 一水肌酸，固定时间服用</li>
         <li><strong>蛋白质：</strong>1.6-2g/kg 体重，约 112-140g/天</li>
         <li><strong>恢复期适应：</strong>第1-2周 RPE 6-7，用 60-70% 重量适应</li>
-        <li><strong>训练时长：</strong>主训日 50-60 分钟、轻训日约 40 分钟，超过 75 分钟质量下降</li>
+        <li><strong>训练时长：</strong>主训日 45-50 分钟、轻训日约 35-40 分钟，超过 75 分钟质量下降</li>
         <li><strong>睡眠饮水：</strong>7-9小时睡眠（恢复&gt;训练），每天至少3L水</li>
         <li><strong>数据备份：</strong>定期导出 JSON（侧边栏按钮），卸载重装不丢训练记录</li>
       </ul>
@@ -938,7 +938,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 6,
+  version: 7,
   profile: {
     status: "恢复期",
     statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
@@ -955,13 +955,12 @@ const DEFAULT_DATA = {
       id: "day1",
       name: "Day 1",
       title: "推：胸+三头+肩",
-      goal: "主训日：卧推5×5线性递增是胸肌增长第一优先，三头顺带（树干理论）。预计时长 55-60分钟(含热身)；轻训日(第2轮)约40分钟。第一轮主训100%强度，第二轮轻训重量打7折、休息缩短(复合2分钟/辅助60-90秒)。",
+      goal: "主训日：卧推5×5线性递增是第一优先，三头顺带（树干理论）。预计 45-50分钟(含热身)，轻训日约35分钟。主训100%强度，轻训重量7折、休息缩短。",
       exercises: [
-        { id: "ex1", name: "杠铃卧推", sets: 5, reps: "5", weight: 50, rest: "3分钟", tag: "主项", note: "恢复期三阶段：①第1-2周45kg×4-5组×8次找回技术(RPE 6)；②第3周47.5kg切5×5；③第4周起50kg正式5×5线性递增，每周+2.5kg。不组组力竭(RPE 7-8)，4-5周后减载一周(80%或容量减半)。" },
+        { id: "ex1", name: "杠铃卧推", sets: 5, reps: "5", weight: 50, rest: "2.5分钟", tag: "主项", note: "恢复期三阶段：①第1-2周45kg×4-5组×8次找回技术(RPE 6)；②第3周47.5kg切5×5；③第4周起50kg正式5×5线性递增，每周+2.5kg。不组组力竭(RPE 7-8)，4-5周后减载一周(80%或容量减半)。" },
         { id: "ex2", name: "上斜哑铃卧推", sets: 4, reps: "8-10", weight: 17.5, rest: "90秒", tag: "主项", note: "上胸是体型第一短板，角度30度。重量到位别偷懒，注意顶峰收缩。" },
-        { id: "ex3", name: "哑铃推举", sets: 3, reps: "8-10", weight: 12.5, rest: "2分钟", tag: "次项", note: "肩部推举让肩更宽更饱满，改善上半身单薄。坐姿更安全，不借力。" },
-        { id: "ex4", name: "双杠臂屈伸", sets: 3, reps: "8-12", weight: 0, rest: "90秒", tag: "", note: "复合动作同时练下胸+三头。做不到8个做辅助式。三头顺带练即可。" },
-        { id: "ex5", name: "绳索下压", sets: 2, reps: "12-15", weight: 0, rest: "60秒", tag: "", note: "三头只顺带2组（树干理论：优先长大肌群，别特意练手臂）。" },
+        { id: "ex3", name: "哑铃推举", sets: 3, reps: "8-10", weight: 12.5, rest: "90秒", tag: "次项", note: "肩部推举让肩更宽更饱满，改善上半身单薄。坐姿更安全，不借力。" },
+        { id: "ex4", name: "双杠臂屈伸", sets: 3, reps: "8-12", weight: 0, rest: "90秒", tag: "", note: "复合动作同时练下胸+三头（已覆盖三头，无需再加孤立）。做不到8个做辅助式。" },
         { id: "ex6", name: "哑铃侧平举", sets: 3, reps: "12-15", weight: 0, rest: "60秒", tag: "", note: "中束让肩变宽。轻重量重形式，避免借力甩起。" }
       ]
     },
@@ -969,12 +968,11 @@ const DEFAULT_DATA = {
       id: "day2",
       name: "Day 2",
       title: "拉：背+二头+后束",
-      goal: "主训日：引体向上是背部王牌动作，配合下拉和划船撑起宽度+厚度。预计时长 50-55分钟(含热身)；轻训日(第2轮)约40分钟。6个主动作占70%精力，二头只顺带；轻训日休息缩短(复合2分钟/辅助60-90秒)。",
+      goal: "主训日：引体向上是背部王牌动作，配合下拉和划船撑起宽度+厚度。预计 45分钟(含热身)，轻训日约35分钟。6个主动作占70%精力，二头只顺带；轻训日休息缩短。",
       exercises: [
-        { id: "ex7", name: "引体向上(辅助)", sets: 4, reps: "5-8", weight: 0, rest: "3分钟", tag: "主项", note: "背部第一优先动作（张老师：引体向上是新手和卡壳者进步最快动作）。解锁后练到10×10再负重。做不了用辅助器械。" },
-        { id: "ex8", name: "高位下拉", sets: 3, reps: "8-10", weight: 40, rest: "2分钟", tag: "主项", note: "从40kg开始(原50kg)，握距略宽于肩，拉至锁骨。宽度优先，线性递增每周+2.5kg。" },
+        { id: "ex7", name: "引体向上(辅助)", sets: 4, reps: "5-8", weight: 0, rest: "2.5分钟", tag: "主项", note: "背部第一优先动作（张老师：引体向上是新手和卡壳者进步最快动作）。解锁后练到10×10再负重。做不了用辅助器械。" },
+        { id: "ex8", name: "高位下拉", sets: 3, reps: "8-10", weight: 40, rest: "90秒", tag: "主项", note: "从40kg开始(原50kg)，握距略宽于肩，拉至锁骨。宽度优先，线性递增每周+2.5kg。" },
         { id: "ex9", name: "坐姿划船(宽握)", sets: 3, reps: "8-10", weight: 45, rest: "90秒", tag: "主项", note: "背部厚度动作。挺胸，肩胛骨后收，拉至腹部位置。" },
-        { id: "ex10", name: "单臂哑铃划船", sets: 2, reps: "10-12", weight: 20, rest: "90秒", tag: "", note: "单侧孤立，更好感受背阔肌发力。躯干稳定不旋转。" },
         { id: "ex11", name: "面拉", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "后束+改善圆肩体态。双手外旋至耳高度，让你站直后更有型。" },
         { id: "ex12", name: "哑铃弯举", sets: 2, reps: "10-12", weight: 0, rest: "60秒", tag: "", note: "二头只顺带2组（树干理论：别特意练手臂）。" }
       ]
@@ -983,15 +981,14 @@ const DEFAULT_DATA = {
       id: "day3",
       name: "Day 3",
       title: "腿：腿部塑形",
-      goal: "主训日：中高次数塑形练紧致腿型，不追求大重量增粗。预计时长 55-60分钟(含热身)；轻训日(第2轮)约40分钟。深蹲为主项线性推进，腿后链+臀部重点；轻训日休息缩短(复合2分钟/辅助60-90秒)。",
+      goal: "主训日：中高次数塑形练紧致腿型，不追求大重量增粗。预计 50分钟(含热身)，轻训日约40分钟。深蹲为主项线性推进，腿后链+臀部重点；轻训日休息缩短。",
       exercises: [
-        { id: "ex13", name: "杠铃深蹲(中高次数)", sets: 4, reps: "8-10", weight: 40, rest: "2分钟", tag: "主项", note: "深蹲为王。塑形期用8-10次中等重量，每周+2.5kg线性推进，4-5周减载。动作质量大于重量。" },
-        { id: "ex14", name: "罗马尼亚硬拉", sets: 4, reps: "10-12", weight: 40, rest: "2分钟", tag: "次项", note: "腿后链和臀部王牌动作，让腿型更紧实。恢复期第1-2周用30-35kg学动作找回硬拉技术，第3周起40kg正式推进，每周+2.5%。" },
-        { id: "ex16", name: "腿举(中高次数)", sets: 3, reps: "15-20", weight: 0, rest: "90秒", tag: "", note: "高次数泵感训练，重量适中，重点是收缩感受。" },
-        { id: "ex17", name: "保加利亚分腿蹲", sets: 3, reps: "10-12", weight: 0, rest: "90秒", tag: "", note: "单腿塑形动作。后脚背放凳子上，躯干微前倾。" },
+        { id: "ex13", name: "杠铃深蹲(中高次数)", sets: 4, reps: "8-10", weight: 40, rest: "2.5分钟", tag: "主项", note: "深蹲为王。塑形期用8-10次中等重量，每周+2.5kg线性推进，4-5周减载。动作质量大于重量。" },
+        { id: "ex14", name: "罗马尼亚硬拉", sets: 4, reps: "10-12", weight: 40, rest: "90秒", tag: "次项", note: "腿后链和臀部王牌动作，让腿型更紧实。恢复期第1-2周用30-35kg学动作找回硬拉技术，第3周起40kg正式推进，每周+2.5%。" },
+        { id: "ex16", name: "腿举(中高次数)", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "高次数泵感训练，重量适中，重点是收缩感受。" },
+        { id: "ex17", name: "保加利亚分腿蹲", sets: 3, reps: "10-12", weight: 0, rest: "60秒", tag: "", note: "单腿塑形动作。后脚背放凳子上，躯干微前倾。" },
         { id: "ex18", name: "坐姿腿弯举", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立动作。顶峰收缩停留1秒。" },
-        { id: "ex19", name: "提踵", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "站姿或坐姿均可。充分拉伸和收缩。" },
-        { id: "ex20", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "60秒", tag: "", note: "平板支撑45-60秒 + 悬垂举腿10-15次，练腿日顺带练核心。" }
+        { id: "ex20", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "45秒", tag: "", note: "平板支撑45-60秒 + 悬垂举腿10-15次，练腿日顺带练核心。" }
       ]
     },
   ],
@@ -1111,6 +1108,21 @@ function loadData() {
     saveData();
     showToast('已改为推/拉/腿三分化计划');
   }
+  // v7 迁移：精简动作控制在1小时内（去掉绳索下压/单臂划船/提踵，压缩休息）
+  if (!appData.version || appData.version < 7) {
+    const oldProfile = appData.profile || {};
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    ['status','statusSub','height','weight','benchEst','benchSub'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '') {
+        newData.profile[k] = oldProfile[k];
+      }
+    });
+    newData.profile.frequency = '3天/周循环';
+    newData.profile.freqSub = '推/拉/腿循环 · 练3休1 · 每肌群2次/周（主训+轻训70%）';
+    appData = newData;
+    saveData();
+    showToast('已精简：每次训练控制在1小时内');
+  }
   // v6 迁移：三分化 -> 张老师三分化循环（练3休1，每肌群2次/周，主训+轻训）
   if (!appData.version || appData.version < 6) {
     const oldProfile = appData.profile || {};
@@ -1157,7 +1169,7 @@ function renderCycleBanner() {
       <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
       <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
       <div>📌 <strong>恢复期提醒</strong>：第1-2周主动作用 60% 重量（卧推45kg）找回技术，第3周过渡，第4周起正式 5×5 线性递增。</div>
-      <div>⏱ <strong>时长控制</strong>：主训日 50-60 分钟、轻训日约 40 分钟（含热身 5-10 分钟）。超过 75 分钟训练质量开始下降，练得久≠练得好。</div>
+      <div>⏱ <strong>时长控制</strong>：主训日 45-50 分钟、轻训日约 35-40 分钟（含热身 5-10 分钟）。超过 75 分钟训练质量开始下降，练得久≠练得好。</div>
     </div>
   `;
 }

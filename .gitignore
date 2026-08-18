@@ -1,0 +1,4 @@
+# 工具脚本和抓取内容不进仓库
+douyin_content/
+*.py
+*.ps1

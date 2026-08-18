@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f97316">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="健身计划">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="健身训练计划">
+<title>健身训练计划 - 可编辑工作台</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-dark: #121417;
+  --bg-card: #1e2127;
+  --bg-card-hover: #262a31;
+  --bg-input: #2a2e36;
+  --text-main: #e4e6eb;
+  --text-dim: #9ca3af;
+  --text-muted: #6b7280;
+  --border: #2d3139;
+  --accent-orange: #f97316;
+  --accent-orange-glow: rgba(249,115,22,0.15);
+  --accent-green: #22c55e;
+  --accent-blue: #3b82f6;
+  --accent-red: #ef4444;
+  --accent-yellow: #fbbf24;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-dark);
+  background-image:
+    radial-gradient(ellipse at top left, rgba(249,115,22,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(59,130,246,0.06) 0%, transparent 50%);
+  min-height: 100vh;
+  color: var(--text-main);
+  display: flex;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-nav {
+  width: 220px;
+  min-height: 100vh;
+  background: rgba(30,33,39,0.6);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.nav-logo {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.nav-logo .logo-icon { font-size: 28px; }
+.nav-logo .logo-title { font-size: 16px; font-weight: 700; margin-top: 4px; color: var(--accent-orange); }
+.nav-logo .logo-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.nav-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 0 20px;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.day-nav-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+.day-nav-item:hover { background: var(--bg-card-hover); color: var(--text-main); }
+.day-nav-item.active {
+  color: var(--accent-orange);
+  border-left-color: var(--accent-orange);
+  background: var(--accent-orange-glow);
+}
+.day-nav-item .nav-day-name { font-weight: 600; font-size: 14px; }
+.day-nav-item .nav-day-title { font-size: 11px; opacity: 0.7; }
+.day-nav-item .nav-delete {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.day-nav-item:hover .nav-delete { display: flex; }
+
+.nav-add-day {
+  margin: 8px 12px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.nav-add-day:hover { border-color: var(--accent-orange); color: var(--accent-orange); }
+
+.nav-tools {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.nav-tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-tool-btn:hover { color: var(--accent-orange); }
+
+/* ===== MAIN CONTENT ===== */
+.main-area {
+  flex: 1;
+  padding: 24px 32px;
+  max-width: calc(100vw - 220px);
+  overflow-x: hidden;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f97316, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-header .header-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.phase-badge {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.phase-recovery { background: rgba(251,191,36,0.15); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.3); }
+
+/* ===== STATS CARDS ===== */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 18px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--accent-orange);
+  opacity: 0.6;
+}
+.stat-card:hover { border-color: var(--accent-orange); transform: translateY(-2px); }
+.stat-card .stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.stat-card .stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.stat-card .stat-unit { font-size: 13px; color: var(--text-dim); font-weight: 500; }
+.stat-card .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.stat-card input {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent-orange);
+  border: none;
+  border-bottom: 2px solid var(--border);
+  background: transparent;
+  width: 80px;
+  outline: none;
+  padding: 2px 0;
+  transition: border-color 0.2s;
+}
+.stat-card input:focus { border-bottom-color: var(--accent-orange); }
+.stat-card input::-webkit-outer-spin-button,
+.stat-card input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stat-card input[type=number] { -moz-appearance: textfield; }
+
+/* ===== WORKOUT SECTION ===== */
+.workout-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.workout-panel-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.workout-panel-header h2 { font-size: 18px; font-weight: 700; }
+.workout-panel-header .day-info { font-size: 12px; color: var(--text-dim); }
+
+.goal-bar {
+  margin: 16px 24px;
+  padding: 12px 16px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-orange);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.goal-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+}
+.goal-bar .label { color: var(--accent-orange); font-weight: 600; white-space: nowrap; }
+
+.volume-badge {
+  font-size: 11px;
+  background: rgba(34,197,94,0.1);
+  color: var(--accent-green);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.exercise-list { padding: 8px 24px 16px; }
+
+.exercise-card {
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+.exercise-card:hover { background: var(--bg-card-hover); }
+.exercise-card.tag-main { border-left-color: var(--accent-orange); }
+.exercise-card.tag-sub { border-left-color: var(--accent-blue); }
+.exercise-card.tag-aux { border-left-color: var(--accent-green); }
+.exercise-card.dragging { opacity: 0.4; }
+.exercise-card.drag-over { border-top: 2px solid var(--accent-orange); }
+
+.ex-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ex-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.ex-name:hover { color: var(--accent-orange); }
+.ex-actions { display: flex; gap: 4px; align-items: center; }
+.ex-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.ex-tag-main { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
+.ex-tag-sub { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.ex-tag-aux { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+
+.icon-btn {
+  width: 26px; height: 26px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.15s;
+  background: transparent;
+  color: var(--text-muted);
+}
+.icon-btn:hover { transform: scale(1.15); }
+.icon-btn.edit-btn:hover { background: rgba(59,130,246,0.2); color: var(--accent-blue); }
+.icon-btn.delete-btn:hover { background: rgba(239,68,68,0.2); color: var(--accent-red); }
+.icon-btn.drag-btn { cursor: grab; }
+.icon-btn.drag-btn:hover { background: rgba(156,163,175,0.15); color: var(--text-dim); }
+
+.ex-row2 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ex-chip {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ex-chip-sets { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
+.ex-chip-rest { background: rgba(251,191,36,0.12); color: var(--accent-yellow); }
+
+.weight-chip {
+  background: rgba(249,115,22,0.12);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+}
+.weight-chip label { font-size: 10px; color: var(--text-muted); }
+.weight-chip input {
+  width: 45px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  color: var(--accent-orange);
+}
+.weight-chip input::-webkit-outer-spin-button,
+.weight-chip input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.weight-chip input[type=number] { -moz-appearance: textfield; }
+.weight-chip span { font-size: 11px; color: var(--text-dim); }
+
+.ex-note {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  cursor: text;
+  border: 1px solid transparent;
+}
+.ex-note:hover { border-color: var(--border); }
+.ex-note:focus { border-color: var(--accent-blue); outline: none; }
+.ex-note[contenteditable="true"] { background: rgba(59,130,246,0.05); }
+
+.add-exercise-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.add-exercise-btn:hover {
+  border-color: var(--accent-orange);
+  color: var(--accent-orange);
+  background: var(--accent-orange-glow);
+}
+
+/* ===== RIGHT COLUMN ===== */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.info-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+.info-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checklist { list-style: none; }
+.checklist li {
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: color 0.2s;
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li:hover { color: var(--accent-orange); }
+.checklist li.done { text-decoration: line-through; color: var(--text-muted); }
+.checklist input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--accent-orange);
+  cursor: pointer;
+}
+
+.tip-list { list-style: none; }
+.tip-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.tip-list li:last-child { border-bottom: none; }
+.tip-list li strong { color: var(--accent-orange); }
+
+.chart-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.chart-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.chart-container { position: relative; height: 260px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 480px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.modal h2 { font-size: 17px; margin-bottom: 16px; color: var(--text-main); }
+.modal .form-group { margin-bottom: 14px; }
+.modal label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+.modal input, .modal select, .modal textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  background: var(--bg-input);
+  color: var(--text-main);
+}
+.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--accent-orange); }
+.modal .modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.btn-save {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+  background: var(--accent-orange);
+  color: white;
+  transition: opacity 0.2s;
+}
+.btn-save:hover { opacity: 0.85; }
+.btn-cancel {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-dim);
+}
+.btn-cancel:hover { background: var(--bg-input); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-card);
+  border: 1px solid var(--accent-orange);
+  color: var(--text-main);
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 13px;
+  z-index: 2000;
+  transition: transform 0.3s;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.2);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===== CYCLE BANNER ===== */
+.cycle-banner {
+  background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(59,130,246,0.08));
+  border: 1px solid rgba(249,115,22,0.3);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.cycle-banner .cycle-icon { font-size: 20px; line-height: 1.4; }
+.cycle-banner strong { color: var(--text-main); }
+.cycle-banner .cycle-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 2px 0 6px;
+}
+.cycle-step {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.cycle-step.push { background: rgba(249,115,22,0.15); color: #fdba74; }
+.cycle-step.pull { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.cycle-step.legs { background: rgba(34,197,94,0.15); color: #86efac; }
+.cycle-step.rest { background: rgba(107,114,128,0.2); color: #9ca3af; }
+.cycle-arrow { color: var(--text-muted); }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  body { flex-direction: column; }
+  /* 侧边栏改为顶部横条 */
+  .sidebar-nav {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    padding: 0 10px 0 4px;
+    border-bottom: none;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .nav-logo .logo-icon { font-size: 20px; }
+  .nav-logo .logo-title { font-size: 12px; margin-top: 0; }
+  .nav-logo .logo-sub { display: none; }
+  .nav-section-title { display: none; }
+  #dayNav {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .day-nav-item {
+    padding: 8px 12px;
+    border-left: none;
+    border-radius: 8px;
+    background: var(--bg-card);
+    white-space: nowrap;
+  }
+  .day-nav-item.active {
+    border-left: none;
+  }
+  .nav-add-day {
+    margin: 0 6px;
+    padding: 8px 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nav-tools {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    display: flex;
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+  .nav-tool-btn {
+    padding: 8px 10px;
+    width: auto;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .main-area {
+    max-width: 100vw;
+    padding: 16px 14px calc(40px + env(safe-area-inset-bottom));
+  }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 12px; }
+  .bottom-grid { grid-template-columns: 1fr; }
+  .workout-panel { padding: 0; }
+  .exercise-card { padding: 12px; }
+  .ex-row2 { flex-wrap: wrap; gap: 8px; }
+  .chart-card { padding: 14px; }
+  .cycle-banner { flex-direction: column; gap: 6px; }
+  .page-header h1 { font-size: 20px; }
+  .goal-bar { flex-direction: column; align-items: stretch; gap: 6px; }
+  .goal-bar input { font-size: 13px; }
+  .nav-delete { display: flex !important; }
+}
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .stat-card { padding: 10px; }
+  .ex-row2 .weight-chip { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR NAV ===== -->
+<div class="sidebar-nav">
+  <div class="nav-logo">
+    <div class="logo-icon">🏋️</div>
+    <div class="logo-title">FITNESS PLAN</div>
+    <div class="logo-sub">可编辑训练工作台</div>
+  </div>
+  <div class="nav-section-title">训练日</div>
+  <div id="dayNav"></div>
+  <div class="nav-add-day" onclick="openAddDayModal()">+ 添加训练日</div>
+  <div class="nav-tools">
+    <button class="nav-tool-btn" onclick="exportData()">📦 导出数据</button>
+    <button class="nav-tool-btn" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="nav-tool-btn" onclick="resetData()">🔄 重置默认</button>
+  </div>
+</div>
+
+<!-- ===== MAIN AREA ===== -->
+<div class="main-area">
+  <div class="page-header">
+    <h1>训练计划工作台</h1>
+    <div class="header-meta">
+      <span class="phase-badge phase-recovery" id="phaseBadge">恢复适应期</span>
+    </div>
+  </div>
+
+  <!-- CYCLE MODE BANNER -->
+  <div class="cycle-banner" id="cycleBanner"></div>
+
+  <!-- STATS -->
+  <div class="stats-row" id="statsGrid"></div>
+
+  <!-- WORKOUT -->
+  <div class="workout-panel">
+    <div class="workout-panel-header">
+      <h2 id="currentDayTitle">Day 1</h2>
+      <div class="day-info" id="dayInfo"></div>
+    </div>
+    <div class="goal-bar">
+      <span class="label">🎯 目标</span>
+      <input type="text" id="dayGoalInput" onchange="updateDayGoalFromInput(this.value)">
+    </div>
+    <div class="exercise-list" id="exerciseList"></div>
+    <div style="padding: 0 24px 16px;">
+      <button class="add-exercise-btn" onclick="openAddExerciseModal(currentDayId)">+ 添加新动作</button>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-card">
+    <h3>📈 力量恢复预测</h3>
+    <div class="chart-container">
+      <canvas id="progressChart" role="img" aria-label="力量恢复预测图表"></canvas>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+    <div class="info-card">
+      <h3>✅ 今日检查清单</h3>
+      <ul class="checklist" id="checklist"></ul>
+    </div>
+    <div class="info-card">
+      <h3>💊 肌酸 & 恢复指南</h3>
+      <ul class="tip-list">
+        <li><strong>你的目标：</strong>上半身增肌(胸背肩优先) + 腿部塑形</li>
+        <li><strong>容量红线：</strong>每肌群每周 12-15 组最佳，不超过 20 组</li>
+        <li><strong>腿部策略：</strong>中高次数8-20次，避免大重量把腿练粗</li>
+        <li><strong>肌酸剂量：</strong>每日 5g 一水肌酸，固定时间服用</li>
+        <li><strong>蛋白质：</strong>1.6-2g/kg 体重，约 112-140g/天</li>
+        <li><strong>恢复期适应：</strong>第1-2周 RPE 6-7，用 60-70% 重量适应</li>
+        <li><strong>睡眠饮水：</strong>7-9小时睡眠（恢复&gt;训练），每天至少3L水</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="addExerciseModal">
+  <div class="modal">
+    <h2>添加新动作</h2>
+    <div class="form-group">
+      <label>动作名称</label>
+      <input type="text" id="newExName" placeholder="如：杠铃硬拉" list="exerciseSuggestions">
+      <datalist id="exerciseSuggestions">
+        <option value="杠铃卧推"><option value="哑铃卧推"><option value="上斜哑铃卧推">
+        <option value="下斜卧推"><option value="器械夹胸"><option value="双杠臂屈伸">
+        <option value="俯卧撑"><option value="绳索下压"><option value="仰卧臂屈伸">
+        <option value="窄距卧推"><option value="哑铃侧平举"><option value="哑铃前平举">
+        <option value="面拉"><option value="俯身飞鸟"><option value="阿诺德推举">
+        <option value="哑铃推举"><option value="杠铃推举"><option value="高位下拉">
+        <option value="引体向上"><option value="坐姿划船"><option value="单臂哑铃划船">
+        <option value="杠铃划船"><option value="直臂下压"><option value="杠铃弯举">
+        <option value="哑铃弯举"><option value="锤式弯举"><option value="集中弯举">
+        <option value="杠铃深蹲"><option value="前蹲"><option value="腿举">
+        <option value="罗马尼亚硬拉"><option value="传统硬拉"><option value="保加利亚分腿蹲">
+        <option value="弓步蹲"><option value="腿弯举"><option value="腿屈伸">
+        <option value="提踵"><option value="山羊挺身">
+        <option value="平板支撑"><option value="悬垂举腿"><option value="卷腹">
+        <option value="俄罗斯转体"><option value="死虫式"><option value="仰卧交替抬腿">
+        <option value="侧平板支撑"><option value="登山跑"><option value="波比跳">
+      </datalist>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>组数</label>
+        <input type="number" id="newExSets" value="4" min="1" max="10">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>次数</label>
+        <input type="text" id="newExReps" value="8-12" placeholder="如 8-12 或 15">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>重量(kg)</label>
+        <input type="number" id="newExWeight" value="0" step="0.5">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>休息</label>
+        <input type="text" id="newExRest" value="90秒" placeholder="如 90秒 或 2分钟">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>标签</label>
+      <select id="newExTag">
+        <option value="">无</option>
+        <option value="主项">主项</option>
+        <option value="次项">次项</option>
+        <option value="辅助">辅助</option>
+        <option value="孤立">孤立</option>
+        <option value="热身">热身</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>备注/训练要点</label>
+      <textarea id="newExNote" rows="3" placeholder="动作要领、注意事项等"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addExerciseModal')">取消</button>
+      <button class="btn-save" onclick="confirmAddExercise()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addDayModal">
+  <div class="modal">
+    <h2>添加训练日</h2>
+    <div class="form-group">
+      <label>训练日名称</label>
+      <input type="text" id="newDayName" placeholder="如：Day 5">
+    </div>
+    <div class="form-group">
+      <label>训练部位/主题</label>
+      <input type="text" id="newDayTitle" placeholder="如：手臂专项">
+    </div>
+    <div class="form-group">
+      <label>今日目标</label>
+      <input type="text" id="newDayGoal" placeholder="如：强化手臂围度">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addDayModal')">取消</button>
+      <button class="btn-save" onclick="confirmAddDay()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editExerciseModal">
+  <div class="modal">
+    <h2>编辑动作</h2>
+    <input type="hidden" id="editExId">
+    <input type="hidden" id="editExDayId">
+    <div class="form-group">
+      <label>动作名称</label>
+      <input type="text" id="editExName" list="exerciseSuggestions">
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>组数</label>
+        <input type="number" id="editExSets" min="1" max="10">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>次数</label>
+        <input type="text" id="editExReps">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>重量(kg)</label>
+        <input type="number" id="editExWeight" step="0.5">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>休息</label>
+        <input type="text" id="editExRest">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>标签</label>
+      <select id="editExTag">
+        <option value="">无</option>
+        <option value="主项">主项</option>
+        <option value="次项">次项</option>
+        <option value="辅助">辅助</option>
+        <option value="孤立">孤立</option>
+        <option value="热身">热身</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>备注/训练要点</label>
+      <textarea id="editExNote" rows="3"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('editExerciseModal')">取消</button>
+      <button class="btn-save" onclick="confirmEditExercise()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== DEFAULT DATA ==========
+const DEFAULT_DATA = {
+  version: 6,
+  profile: {
+    status: "恢复期",
+    statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
+    height: 177,
+    weight: 70,
+    weightSub: "BMI 22.4 - 标准范围",
+    benchEst: "50-55",
+    benchSub: "原60kg，预计下降10-15%",
+    frequency: "3天/周循环",
+    freqSub: "推/拉/腿循环 · 练3休1 · 每肌群2次/周（主训+轻训70%）"
+  },
+  days: [
+    {
+      id: "day1",
+      name: "Day 1",
+      title: "推：胸+三头+肩",
+      goal: "主训日：卧推5×5线性递增是胸肌增长第一优先，三头顺带（树干理论）。第一轮主训100%强度，第二轮轻训重量打7折。",
+      exercises: [
+        { id: "ex1", name: "杠铃卧推", sets: 5, reps: "5", weight: 50, rest: "3分钟", tag: "主项", note: "增力主项：从50kg开把(约70% 1RM)，5×5线性递增，每周+2.5kg。RPE 7-8不组组力竭，4-5周后减载一周（80%重量或容量减半）。" },
+        { id: "ex2", name: "上斜哑铃卧推", sets: 4, reps: "8-10", weight: 17.5, rest: "90秒", tag: "主项", note: "上胸是体型第一短板，角度30度。重量到位别偷懒，注意顶峰收缩。" },
+        { id: "ex3", name: "哑铃推举", sets: 3, reps: "8-10", weight: 12.5, rest: "2分钟", tag: "次项", note: "肩部推举让肩更宽更饱满，改善上半身单薄。坐姿更安全，不借力。" },
+        { id: "ex4", name: "双杠臂屈伸", sets: 3, reps: "8-12", weight: 0, rest: "90秒", tag: "", note: "复合动作同时练下胸+三头。做不到8个做辅助式。三头顺带练即可。" },
+        { id: "ex5", name: "绳索下压", sets: 2, reps: "12-15", weight: 0, rest: "60秒", tag: "", note: "三头只顺带2组（树干理论：优先长大肌群，别特意练手臂）。" },
+        { id: "ex6", name: "哑铃侧平举", sets: 3, reps: "12-15", weight: 0, rest: "60秒", tag: "", note: "中束让肩变宽。轻重量重形式，避免借力甩起。" }
+      ]
+    },
+    {
+      id: "day2",
+      name: "Day 2",
+      title: "拉：背+二头+后束",
+      goal: "主训日：引体向上是背部王牌动作，配合下拉和划船撑起宽度+厚度。6个主动作占70%精力，二头只顺带。",
+      exercises: [
+        { id: "ex7", name: "引体向上(辅助)", sets: 4, reps: "5-8", weight: 0, rest: "3分钟", tag: "主项", note: "背部第一优先动作（张老师：引体向上是新手和卡壳者进步最快动作）。解锁后练到10×10再负重。做不了用辅助器械。" },
+        { id: "ex8", name: "高位下拉", sets: 3, reps: "8-10", weight: 40, rest: "2分钟", tag: "主项", note: "从40kg开始(原50kg)，握距略宽于肩，拉至锁骨。宽度优先，线性递增每周+2.5kg。" },
+        { id: "ex9", name: "坐姿划船(宽握)", sets: 3, reps: "8-10", weight: 45, rest: "90秒", tag: "主项", note: "背部厚度动作。挺胸，肩胛骨后收，拉至腹部位置。" },
+        { id: "ex10", name: "单臂哑铃划船", sets: 2, reps: "10-12", weight: 20, rest: "90秒", tag: "", note: "单侧孤立，更好感受背阔肌发力。躯干稳定不旋转。" },
+        { id: "ex11", name: "面拉", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "后束+改善圆肩体态。双手外旋至耳高度，让你站直后更有型。" },
+        { id: "ex12", name: "哑铃弯举", sets: 2, reps: "10-12", weight: 0, rest: "60秒", tag: "", note: "二头只顺带2组（树干理论：别特意练手臂）。" }
+      ]
+    },
+    {
+      id: "day3",
+      name: "Day 3",
+      title: "腿：腿部塑形",
+      goal: "主训日：中高次数塑形练紧致腿型，不追求大重量增粗。深蹲为主项线性推进，腿后链+臀部重点（张老师：练好腿背后侧链）。",
+      exercises: [
+        { id: "ex13", name: "杠铃深蹲(中高次数)", sets: 4, reps: "8-10", weight: 40, rest: "2分钟", tag: "主项", note: "深蹲为王。塑形期用8-10次中等重量，每周+2.5kg线性推进，4-5周减载。动作质量大于重量。" },
+        { id: "ex14", name: "罗马尼亚硬拉", sets: 4, reps: "10-12", weight: 40, rest: "2分钟", tag: "次项", note: "腿后链和臀部王牌动作，让腿型更紧实。从40kg开始，硬拉每周+2.5%即可。" },
+        { id: "ex16", name: "腿举(中高次数)", sets: 3, reps: "15-20", weight: 0, rest: "90秒", tag: "", note: "高次数泵感训练，重量适中，重点是收缩感受。" },
+        { id: "ex17", name: "保加利亚分腿蹲", sets: 3, reps: "10-12", weight: 0, rest: "90秒", tag: "", note: "单腿塑形动作。后脚背放凳子上，躯干微前倾。" },
+        { id: "ex18", name: "坐姿腿弯举", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立动作。顶峰收缩停留1秒。" },
+        { id: "ex19", name: "提踵", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "站姿或坐姿均可。充分拉伸和收缩。" },
+        { id: "ex20", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "60秒", tag: "", note: "平板支撑45-60秒 + 悬垂举腿10-15次，练腿日顺带练核心。" }
+      ]
+    },
+  ],
+  checklist: [
+    "训练前热身激活 5-10分钟（激活 > 训练）",
+    "主动作不组组力竭（RPE 7-8，留2次余量）",
+    "记录训练重量（线性递增 +2.5kg/周）",
+    "肌酸 5g (训练日)",
+    "睡眠 7-9 小时（恢复 > 训练）"
+  ]
+};
+
+// ========== STATE ==========
+let appData = null;
+let activeDayId = null;
+let chartInstance = null;
+
+// ========== INIT ==========
+function init() {
+  // PWA: 注册 Service Worker（离线可用 + 安装到主屏幕）
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+  loadData();
+  renderCycleBanner();
+  renderStats();
+  renderDayNav();
+  renderWorkout();
+  renderChecklist();
+  renderChart();
+}
+
+function loadData() {
+  const saved = localStorage.getItem('fitnessPlanData_v2');
+  if (saved) {
+    try {
+      appData = JSON.parse(saved);
+      if (!appData.days || !appData.profile) {
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+    } catch(e) {
+      appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+  } else {
+    // try migrate from old version
+    const oldSaved = localStorage.getItem('fitnessPlanData');
+    if (oldSaved) {
+      try {
+        appData = JSON.parse(oldSaved);
+        if (!appData.days || !appData.profile) throw new Error('invalid');
+        saveData();
+      } catch(e) {
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+    } else {
+      appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+  }
+  // 检查清单精简迁移：旧版8项 -> 新版5项
+  if (appData.checklist && appData.checklist.length >= 6) {
+    appData.checklist = DEFAULT_DATA.checklist.slice();
+    saveData();
+  }
+  // 计划版本迁移：v3(体型定制版)之前 -> 升级到新计划（保留用户已改的身高体重等数据）
+  if (!appData.version || appData.version < 3) {
+    const oldProfile = appData.profile || {};
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    // 保留用户可能已经修改过的个人数据
+    ['status','statusSub','height','weight','benchEst','benchSub','frequency','freqSub'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '' && !(k === 'statusSub' || k === 'benchSub' || k === 'freqSub')) {
+        newData.profile[k] = oldProfile[k];
+      }
+    });
+    appData = newData;
+    saveData();
+    showToast('已升级到体型定制版计划');
+  }
+  // v4 迁移：移除臀桥和有氧燃脂训练（用户要求先不减脂）
+  if (!appData.version || appData.version < 4) {
+    let changed = false;
+    (appData.days || []).forEach(d => {
+      const before = d.exercises.length;
+      d.exercises = (d.exercises || []).filter(e => !(e.name && (e.name.includes('臀桥') || e.name.includes('有氧燃脂'))));
+      if (d.exercises.length !== before) changed = true;
+      if (d.id === 'day3') {
+        d.title = '腿部塑形';
+        d.goal = '腿部塑形：中高次数为主，练出紧致腿型，不追求大重量增粗';
+      }
+      if (d.id === 'day4') {
+        d.title = '肩+核心';
+        d.goal = '肩部塑形 + 核心稳定';
+      }
+    });
+    if (appData.profile && appData.profile.freqSub && appData.profile.freqSub.includes('减脂')) {
+      appData.profile.freqSub = '上肢重点增肌 + 腿部塑形';
+      changed = true;
+    }
+    appData.version = 4;
+    if (changed) {
+      saveData();
+      showToast('已按你的要求移除臀桥和减脂训练');
+    }
+  }
+  // v5 迁移：4天分化 -> 3天三分化（推/拉/腿）
+  if (!appData.version || appData.version < 5) {
+    const oldProfile = appData.profile || {};
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    // 保留用户已修改过的个人数据（频率强制改为3天/周）
+    ['status','height','weight','benchEst'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '') {
+        newData.profile[k] = oldProfile[k];
+      }
+    });
+    newData.profile.frequency = '3天/周';
+    newData.profile.freqSub = '推/拉/腿 三分化 · 上肢增肌优先';
+    appData = newData;
+    saveData();
+    showToast('已改为推/拉/腿三分化计划');
+  }
+  // v6 迁移：三分化 -> 张老师三分化循环（练3休1，每肌群2次/周，主训+轻训）
+  if (!appData.version || appData.version < 6) {
+    const oldProfile = appData.profile || {};
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    // 保留用户已修改过的个人数据（频率强制改为循环版）
+    ['status','statusSub','height','weight','benchEst'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '') {
+        newData.profile[k] = oldProfile[k];
+      }
+    });
+    newData.profile.frequency = '3天/周循环';
+    newData.profile.freqSub = '推/拉/腿循环 · 练3休1 · 每肌群2次/周（主训+轻训70%）';
+    appData = newData;
+    saveData();
+    showToast('已升级为三分化循环计划（每肌群2次/周）');
+  }
+  activeDayId = appData.days[0]?.id || 'day1';
+}
+
+function saveData() {
+  localStorage.setItem('fitnessPlanData_v2', JSON.stringify(appData));
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ========== CYCLE BANNER ==========
+function renderCycleBanner() {
+  const el = document.getElementById('cycleBanner');
+  el.innerHTML = `
+    <div class="cycle-icon">🔄</div>
+    <div>
+      <div class="cycle-steps">
+        <span class="cycle-step push">推</span><span class="cycle-arrow">→</span>
+        <span class="cycle-step pull">拉</span><span class="cycle-arrow">→</span>
+        <span class="cycle-step legs">腿</span><span class="cycle-arrow">→</span>
+        <span class="cycle-step rest">休</span><span class="cycle-arrow">→</span>循环
+      </div>
+      <div><strong>每肌群一周 2 次</strong>（72小时黄金恢复）：第1轮主训 100% 强度，第2轮轻训重量打 7 折（主项每周最多 2 次）。</div>
+      <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
+      <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
+    </div>
+  `;
+}
+
+// ========== RENDER STATS ==========
+function renderStats() {
+  const p = appData.profile;
+  const bmi = (parseFloat(p.weight) / Math.pow(parseFloat(p.height)/100, 2)).toFixed(1);
+  const bmiStatus = bmi < 18.5 ? '偏瘦' : bmi < 24 ? '标准范围' : bmi < 28 ? '偏胖' : '肥胖';
+  p.weightSub = `BMI ${bmi} - ${bmiStatus}`;
+
+  const stats = [
+    { label: "当前状态", value: p.status, sub: p.statusSub, editable: true, key: "status", type: "text", subKey: "statusSub" },
+    { label: "身高", value: p.height, unit: "cm", editable: true, key: "height", type: "number" },
+    { label: "体重", value: p.weight, unit: "kg", editable: true, key: "weight", type: "number" },
+    { label: "预估卧推", value: p.benchEst, unit: "kg", editable: true, key: "benchEst", type: "number" },
+    { label: "训练频率", value: p.frequency, sub: p.freqSub, editable: true, key: "frequency", type: "text", subKey: "freqSub" }
+  ];
+
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-label">${s.label}</div>
+      ${s.editable
+        ? `<div class="stat-value"><input type="${s.type || 'text'}" value="${s.value}" onchange="updateProfile('${s.key}', this.value)" oninput="updateProfileLive('${s.key}', this.value)"><span class="stat-unit">${s.unit || ''}</span></div>`
+        : `<div class="stat-value">${s.value}</div>`
+      }
+      ${s.subKey
+        ? `<div class="stat-sub"><input type="text" value="${s.sub || ''}" placeholder="备注说明" onchange="updateSub('${s.subKey}', this.value)" style="background:transparent;border:1px dashed var(--border);border-radius:6px;color:var(--text-dim);font-size:11px;width:100%;padding:2px 6px;outline:none;"></div>`
+        : `<div class="stat-sub">${s.sub || ''}</div>`
+      }
+    </div>
+  `).join('');
+}
+
+function updateProfile(key, value) {
+  appData.profile[key] = value;
+  saveData();
+  renderStats();
+  showToast('已保存');
+}
+
+function updateSub(key, value) {
+  appData.profile[key] = value;
+  saveData();
+  showToast('已保存');
+}
+
+function updateProfileLive(key, value) {
+  appData.profile[key] = value;
+  if (key === 'weight' || key === 'height') {
+    const h = parseFloat(appData.profile.height) / 100;
+    const w = parseFloat(appData.profile.weight);
+    if (h > 0 && w > 0) {
+      const bmi = (w / (h * h)).toFixed(1);
+      const status = bmi < 18.5 ? '偏瘦' : bmi < 24 ? '标准范围' : bmi < 28 ? '偏胖' : '肥胖';
+      appData.profile.weightSub = `BMI ${bmi} - ${status}`;
+      saveData();
+    }
+  }
+}
+
+// ========== RENDER DAY NAV ==========
+function renderDayNav() {
+  const nav = document.getElementById('dayNav');
+  nav.innerHTML = appData.days.map(d => `
+    <div class="day-nav-item ${d.id === activeDayId ? 'active' : ''}" onclick="switchDay('${d.id}')">
+      <span class="nav-day-name">${d.name}</span>
+      <span class="nav-day-title">${d.title}</span>
+      ${appData.days.length > 1 ? `<button class="nav-delete" onclick="deleteDay('${d.id}', event)" title="删除">&times;</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function switchDay(dayId) {
+  activeDayId = dayId;
+  renderDayNav();
+  renderWorkout();
+}
+
+// ========== RENDER WORKOUT ==========
+function renderWorkout() {
+  const day = appData.days.find(d => d.id === activeDayId);
+  if (!day) return;
+
+  document.getElementById('currentDayTitle').textContent = `${day.name} - ${day.title}`;
+  document.getElementById('dayGoalInput').value = day.goal;
+
+  if (day.id === 'rest' || day.title === '休息') {
+    document.getElementById('exerciseList').innerHTML = `
+      <div style="padding:32px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px;">🔄</div>
+        <h3 style="font-size:18px;margin-bottom:12px;">休息 / 积极恢复</h3>
+        <p style="color:var(--text-dim);line-height:1.8;max-width:400px;margin:0 auto;font-size:13px;">
+          休息日可以选择：散步、拉伸、泡沫轴放松<br>
+          保证睡眠 7-9 小时，肌肉在休息时生长！
+        </p>
+      </div>
+    `;
+    document.getElementById('dayInfo').textContent = '';
+    return;
+  }
+
+  const totalVolume = day.exercises.reduce((sum, ex) => {
+    const sets = parseInt(ex.sets) || 0;
+    const reps = parseInt((ex.reps || '0').split(/[-x×]/)[0]) || 0;
+    return sum + sets * reps * (parseFloat(ex.weight) || 0);
+  }, 0);
+
+  document.getElementById('dayInfo').innerHTML = `
+    ${day.exercises.length} 个动作 |
+    <span class="volume-badge">预估总容量 ${totalVolume} kg</span>
+  `;
+
+  const list = document.getElementById('exerciseList');
+  list.innerHTML = day.exercises.map((ex, idx) => renderExerciseCard(ex, day.id, idx)).join('');
+}
+
+function renderExerciseCard(ex, dayId, idx) {
+  const tagClass = ex.tag === '主项' ? 'tag-main' : ex.tag === '次项' ? 'tag-sub' : 'tag-aux';
+  const tagBadge = ex.tag === '主项' ? 'ex-tag-main' : ex.tag === '次项' ? 'ex-tag-sub' : 'ex-tag-aux';
+
+  return `
+    <div class="exercise-card ${tagClass}" id="ex-${ex.id}" draggable="true"
+         ondragstart="onDragStart(event, '${ex.id}')"
+         ondragover="onDragOver(event)"
+         ondrop="onDrop(event, '${dayId}', '${ex.id}')">
+      <div class="ex-row1">
+        <span class="ex-name" onclick="openEditExerciseModal('${dayId}', '${ex.id}')">${idx+1}. ${ex.name}</span>
+        <div class="ex-actions">
+          ${ex.tag ? `<span class="ex-tag ${tagBadge}">${ex.tag}</span>` : ''}
+          <button class="icon-btn drag-btn" title="拖拽排序" draggable="true">⠿</button>
+          <button class="icon-btn edit-btn" onclick="openEditExerciseModal('${dayId}', '${ex.id}')" title="编辑">✎</button>
+          <button class="icon-btn delete-btn" onclick="deleteExercise('${dayId}', '${ex.id}')" title="删除">🗑</button>
+        </div>
+      </div>
+      <div class="ex-row2">
+        <span class="ex-chip ex-chip-sets">📋 ${ex.sets}组 × ${ex.reps}</span>
+        <span class="ex-chip ex-chip-rest">⏱ 休息 ${ex.rest}</span>
+        <div class="weight-chip">
+          <label>重量</label>
+          <input type="number" value="${ex.weight}" step="0.5"
+                 onchange="updateWeight('${dayId}', '${ex.id}', this.value)">
+          <span>kg</span>
+        </div>
+      </div>
+      ${ex.note ? `<div class="ex-note" contenteditable="false" onclick="this.contentEditable='true';this.focus()" onblur="updateNote('${dayId}','${ex.id}',this.innerText)">${ex.note}</div>` : ''}
+    </div>
+  `;
+}
+
+// ========== EXERCISE CRUD ==========
+let currentDayId = null;
+
+function openAddExerciseModal(dayId) {
+  currentDayId = dayId || activeDayId;
+  document.getElementById('addExerciseModal').classList.add('active');
+}
+
+function confirmAddExercise() {
+  const dayId = currentDayId || activeDayId;
+  const day = appData.days.find(d => d.id === dayId);
+  if (!day) return;
+
+  const name = document.getElementById('newExName').value.trim();
+  if (!name) { showToast('请输入动作名称'); return; }
+
+  const newEx = {
+    id: 'ex' + Date.now(),
+    name: name,
+    sets: parseInt(document.getElementById('newExSets').value) || 4,
+    reps: document.getElementById('newExReps').value.trim() || '8-12',
+    weight: parseFloat(document.getElementById('newExWeight').value) || 0,
+    rest: document.getElementById('newExRest').value.trim() || '90秒',
+    tag: document.getElementById('newExTag').value,
+    note: document.getElementById('newExNote').value.trim()
+  };
+
+  day.exercises.push(newEx);
+  saveData();
+  renderWorkout();
+  closeModal('addExerciseModal');
+  clearAddForm();
+  showToast('动作已添加');
+}
+
+function clearAddForm() {
+  document.getElementById('newExName').value = '';
+  document.getElementById('newExSets').value = '4';
+  document.getElementById('newExReps').value = '8-12';
+  document.getElementById('newExWeight').value = '0';
+  document.getElementById('newExRest').value = '90秒';
+  document.getElementById('newExTag').value = '';
+  document.getElementById('newExNote').value = '';
+}
+
+function openEditExerciseModal(dayId, exId) {
+  const day = appData.days.find(d => d.id === dayId);
+  const ex = day?.exercises.find(e => e.id === exId);
+  if (!ex) return;
+
+  document.getElementById('editExId').value = exId;
+  document.getElementById('editExDayId').value = dayId;
+  document.getElementById('editExName').value = ex.name;
+  document.getElementById('editExSets').value = ex.sets;
+  document.getElementById('editExReps').value = ex.reps;
+  document.getElementById('editExWeight').value = ex.weight;
+  document.getElementById('editExRest').value = ex.rest;
+  document.getElementById('editExTag').value = ex.tag || '';
+  document.getElementById('editExNote').value = ex.note || '';
+
+  document.getElementById('editExerciseModal').classList.add('active');
+}
+
+function confirmEditExercise() {
+  const exId = document.getElementById('editExId').value;
+  const dayId = document.getElementById('editExDayId').value;
+  const day = appData.days.find(d => d.id === dayId);
+  const ex = day?.exercises.find(e => e.id === exId);
+  if (!ex) return;
+
+  ex.name = document.getElementById('editExName').value.trim() || ex.name;
+  ex.sets = parseInt(document.getElementById('editExSets').value) || ex.sets;
+  ex.reps = document.getElementById('editExReps').value.trim() || ex.reps;
+  ex.weight = parseFloat(document.getElementById('editExWeight').value) || 0;
+  ex.rest = document.getElementById('editExRest').value.trim() || ex.rest;
+  ex.tag = document.getElementById('editExTag').value;
+  ex.note = document.getElementById('editExNote').value.trim();
+
+  saveData();
+  renderWorkout();
+  closeModal('editExerciseModal');
+  showToast('动作已更新');
+}
+
+function deleteExercise(dayId, exId) {
+  if (!confirm('确定删除这个动作吗？')) return;
+  const day = appData.days.find(d => d.id === dayId);
+  if (!day) return;
+  day.exercises = day.exercises.filter(e => e.id !== exId);
+  saveData();
+  renderWorkout();
+  showToast('动作已删除');
+}
+
+function updateWeight(dayId, exId, value) {
+  const day = appData.days.find(d => d.id === dayId);
+  const ex = day?.exercises.find(e => e.id === exId);
+  if (ex) {
+    ex.weight = parseFloat(value) || 0;
+    saveData();
+    renderWorkout();
+    showToast('重量已保存');
+  }
+}
+
+function updateNote(dayId, exId, text) {
+  const day = appData.days.find(d => d.id === dayId);
+  const ex = day?.exercises.find(e => e.id === exId);
+  if (ex) {
+    ex.note = text.trim();
+    saveData();
+  }
+}
+
+function updateDayGoalFromInput(value) {
+  const day = appData.days.find(d => d.id === activeDayId);
+  if (day) {
+    day.goal = value;
+    saveData();
+    showToast('目标已更新');
+  }
+}
+
+// ========== DRAG AND DROP ==========
+let draggedExId = null;
+
+function onDragStart(event, exId) {
+  draggedExId = exId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.target.closest('.exercise-card').classList.add('dragging');
+}
+
+function onDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+}
+
+function onDrop(event, dayId, targetExId) {
+  event.preventDefault();
+  const day = appData.days.find(d => d.id === dayId);
+  if (!day || !draggedExId) return;
+
+  const fromIdx = day.exercises.findIndex(e => e.id === draggedExId);
+  const toIdx = day.exercises.findIndex(e => e.id === targetExId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  const [moved] = day.exercises.splice(fromIdx, 1);
+  day.exercises.splice(toIdx, 0, moved);
+
+  saveData();
+  renderWorkout();
+  draggedExId = null;
+  document.querySelectorAll('.exercise-card').forEach(el => el.classList.remove('dragging'));
+}
+
+// ========== DAY CRUD ==========
+function openAddDayModal() {
+  document.getElementById('addDayModal').classList.add('active');
+}
+
+function confirmAddDay() {
+  const name = document.getElementById('newDayName').value.trim();
+  const title = document.getElementById('newDayTitle').value.trim();
+  const goal = document.getElementById('newDayGoal').value.trim();
+
+  if (!name || !title) { showToast('请填写名称和主题'); return; }
+
+  const newDay = {
+    id: 'day' + Date.now(),
+    name: name,
+    title: title,
+    goal: goal || '',
+    exercises: []
+  };
+
+  appData.days.push(newDay);
+  activeDayId = newDay.id;
+  saveData();
+  renderDayNav();
+  renderWorkout();
+
+  document.getElementById('newDayName').value = '';
+  document.getElementById('newDayTitle').value = '';
+  document.getElementById('newDayGoal').value = '';
+
+  closeModal('addDayModal');
+  showToast('训练日已添加');
+}
+
+function deleteDay(dayId, event) {
+  event.stopPropagation();
+  if (appData.days.length <= 1) { showToast('至少保留一个训练日'); return; }
+  if (!confirm('确定删除整个训练日吗？所有动作将一并删除。')) return;
+
+  appData.days = appData.days.filter(d => d.id !== dayId);
+  if (activeDayId === dayId) activeDayId = appData.days[0].id;
+  saveData();
+  renderDayNav();
+  renderWorkout();
+  showToast('训练日已删除');
+}
+
+// ========== MODAL ==========
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// ========== CHECKLIST ==========
+function renderChecklist() {
+  const list = document.getElementById('checklist');
+  list.innerHTML = appData.checklist.map((item, i) => `
+    <li onclick="toggleChecklist(${i}, this)">
+      <input type="checkbox">
+      ${item}
+    </li>
+  `).join('');
+}
+
+function toggleChecklist(idx, li) {
+  const cb = li.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  li.classList.toggle('done', cb.checked);
+}
+
+// ========== CHART ==========
+function renderChart() {
+  const ctx = document.getElementById('progressChart');
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['第1周', '第3周', '第5周', '第7周', '第9周'],
+      datasets: [{
+        label: '卧推 (kg)',
+        data: [50, 55, 60, 65, 70],
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(249,115,22,0.1)',
+        fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#f97316',
+        borderWidth: 2
+      }, {
+        label: '深蹲 (kg)',
+        data: [40, 45, 50, 55, 60],
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34,197,94,0.1)',
+        fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#22c55e',
+        borderWidth: 2
+      }, {
+        label: '硬拉 (kg)',
+        data: [40, 45, 50, 55, 60],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.1)',
+        fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#3b82f6',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { color: '#9ca3af', usePointStyle: true, padding: 15, font: { size: 11 } } }
+      },
+      scales: {
+        y: { beginAtZero: false, min: 30, max: 90, ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        x: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ========== EXPORT / IMPORT ==========
+function exportData() {
+  const dataStr = JSON.stringify(appData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fitness-plan-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据已导出');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.days || !imported.profile) throw new Error('Invalid format');
+      appData = imported;
+      activeDayId = appData.days[0].id;
+      saveData();
+      renderStats();
+      renderDayNav();
+      renderWorkout();
+      renderChecklist();
+      showToast('数据已导入');
+    } catch(err) {
+      showToast('导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetData() {
+  if (!confirm('确定重置为默认计划吗？所有修改将丢失！')) return;
+  appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  activeDayId = appData.days[0].id;
+  saveData();
+  renderStats();
+  renderDayNav();
+  renderWorkout();
+  renderChecklist();
+  showToast('已重置为默认计划');
+}
+
+// ========== KEYBOARD ==========
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+  }
+});
+
+// ========== START ==========
+init();
+</script>
+</body>
+</html>

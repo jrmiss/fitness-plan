@@ -2,7 +2,7 @@
   "name": "健身训练计划",
   "short_name": "健身计划",
   "description": "可编辑的健身训练计划工作台：三分化循环、渐进超负荷、训练记录",
-  "start_url": "./fitness-dashboard.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

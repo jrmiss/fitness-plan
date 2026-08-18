@@ -2,7 +2,7 @@
 const CACHE_NAME = 'fitness-plan-v6';
 const ASSETS = [
   './',
-  './fitness-dashboard.html',
+  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

@@ -673,8 +673,10 @@ body {
 .rec-inputs button:hover { background: #ea580c; }
 .rec-inputs button.recorded {
   background: var(--accent-green);
-  cursor: default;
+  cursor: pointer;
 }
+.rec-segs .rec-inputs { margin-bottom: 6px; }
+.rec-segs .rec-inputs:last-child { margin-bottom: 0; }
 .complete-day-btn {
   width: 100%;
   margin-top: 12px;
@@ -1338,8 +1340,8 @@ function recommendWeight(ex) {
   return w;
 }
 
-// 记录动作完成情况
-function recordExercise(dayId, exId, actualWeight, sets, reps, done) {
+// 记录动作完成情况（segments: [{w, sets, reps}] 支持多组不同重量）
+function recordExercise(dayId, exId, segments, done) {
   let record = appData.history.find(h => h.date === todayStr() && h.dayId === dayId);
   if (!record) {
     const plan = getTodayPlan();
@@ -1347,7 +1349,10 @@ function recordExercise(dayId, exId, actualWeight, sets, reps, done) {
     appData.history.push(record);
   }
   const ex = appData.days.find(d => d.id === dayId).exercises.find(e => e.id === exId);
-  record.exercises.push({ id: exId, name: ex.name, planWeight: ex.weight, actualWeight, sets, reps, done });
+  // 最大重量段作为主重量
+  const maxSeg = segments.reduce((a, b) => b.w > a.w ? b : a);
+  record.exercises = (record.exercises || []).filter(e => e.id !== exId);
+  record.exercises.push({ id: exId, name: ex.name, planWeight: ex.weight, segments, actualWeight: maxSeg.w, sets: maxSeg.sets, reps: maxSeg.reps, done });
   saveData();
   return record;
 }
@@ -1462,6 +1467,11 @@ function switchDay(dayId) {
 }
 
 // ========== RENDER WORKOUT ==========
+function fmtRecText(e) {
+  const segs = e.segments || [{w: e.actualWeight, sets: e.sets, reps: e.reps}];
+  return segs.map(s => `${s.w}kg×${s.sets}×${s.reps}`).join('、');
+}
+
 function renderHistory() {
   const el = document.getElementById('historyList');
   if (!el) return;
@@ -1471,7 +1481,7 @@ function renderHistory() {
   }
   const items = appData.history.slice().reverse().slice(0, 15).map(h => {
     const day = appData.days.find(d => d.id === h.dayId);
-    const exs = (h.exercises || []).map(e => `<span class="h-ex">${e.name} ${e.actualWeight}kg×${e.sets}×${e.reps}${e.done ? '' : '(未完成)'}</span>`).join('、');
+    const exs = (h.exercises || []).map(e => `<span class="h-ex">${e.name} ${fmtRecText(e)}${e.done ? '' : '(未完成)'}</span>`).join('、');
     return `<div class="history-item"><span class="h-date">${h.date}</span> · ${day ? day.title : ''}（${h.isLight ? '轻训' : '主训'}）<br>${exs || '无动作记录'}</div>`;
   }).join('');
   el.innerHTML = items;
@@ -1522,6 +1532,10 @@ function renderExerciseCard(ex, dayId, idx) {
   const recW = recommendWeight(ex);
   const todayRec = (appData.history.find(h => h.date === todayStr() && h.dayId === dayId) || {}).exercises || [];
   const already = todayRec.find(r => r.id === ex.id);
+  const fmtRec = (r) => {
+    const segs = r.segments || [{w: r.actualWeight, sets: r.sets, reps: r.reps}];
+    return segs.map(s => `${s.w}kg×${s.sets}×${s.reps}`).join('、');
+  };
 
   return `
     <div class="exercise-card ${tagClass}" id="ex-${ex.id}" draggable="true"
@@ -1550,15 +1564,24 @@ function renderExerciseCard(ex, dayId, idx) {
       ${ex.note ? `<div class="ex-note" contenteditable="false" onclick="this.contentEditable='true';this.focus()" onblur="updateNote('${dayId}','${ex.id}',this.innerText)">${ex.note}</div>` : ''}
       <div class="ex-record">
         <div class="rec-row">
-          <span>上次: ${last ? `${last.actualWeight}kg×${last.sets}×${last.reps} ${last.done ? '' : '(未完成)'}` : '无记录'}</span>
+          <span>上次: ${last ? `${fmtRec(last)} ${last.done ? '' : '(未完成)'}` : '无记录'}</span>
           <span class="rec-suggest">💡本次建议: ${recW}kg</span>
         </div>
         ${already
-          ? `<div class="rec-row"><span style="color:var(--accent-green);font-weight:600;">✅ 已记录: ${already.actualWeight}kg × ${already.sets}组 × ${already.reps}次 ${already.done ? '· 完成' : '· 未完成'}</span></div>`
-          : `<div class="rec-inputs">
-              <input type="number" placeholder="实际kg" step="0.5" id="rw-${ex.id}" value="${recW}">
-              <input type="number" placeholder="组数" id="rs-${ex.id}" value="${ex.sets}">
-              <input type="number" placeholder="次数" id="rr-${ex.id}" value="${parseInt(ex.reps) || 8}">
+          ? `<div class="rec-row"><span style="color:var(--accent-green);font-weight:600;">✅ 已记录: ${fmtRec(already)} ${already.done ? '· 完成' : '· 未完成'}</span></div>
+             <div class="rec-inputs"><button class="recorded" onclick="undoRecord('${dayId}','${ex.id}')">↩ 重新记录</button></div>`
+          : `<div class="rec-segs" id="segs-${ex.id}">
+              <div class="rec-inputs">
+                <input type="number" placeholder="kg" step="0.5" class="seg-w" value="${recW}">
+                <input type="number" placeholder="组数" class="seg-s" value="${ex.sets}">
+                <input type="number" placeholder="次数" class="seg-r" value="${parseInt(ex.reps) || 8}">
+              </div>
+            </div>
+            <div class="rec-row" style="justify-content:flex-start;">
+              <a style="color:var(--accent-orange);cursor:pointer;font-size:11.5px;" onclick="addSeg('${ex.id}')">＋ 增加一组不同重量</a>
+              <span style="margin-left:auto;color:var(--text-muted);font-size:11px;">不同重量分开记</span>
+            </div>
+            <div class="rec-inputs" style="margin-top:8px;">
               <button onclick="recordExerciseFromCard('${dayId}','${ex.id}')">✓记录</button>
             </div>`}
       </div>
@@ -1566,17 +1589,47 @@ function renderExerciseCard(ex, dayId, idx) {
   `;
 }
 
+function addSeg(exId) {
+  const wrap = document.getElementById('segs-' + exId);
+  if (!wrap) return;
+  const div = document.createElement('div');
+  div.className = 'rec-inputs';
+  div.style.marginTop = '6px';
+  div.innerHTML = `
+    <input type="number" placeholder="kg" step="0.5" class="seg-w">
+    <input type="number" placeholder="组数" class="seg-s">
+    <input type="number" placeholder="次数" class="seg-r">
+    <a style="color:var(--accent-red);cursor:pointer;font-size:12px;" onclick="this.parentElement.remove()">✕</a>`;
+  wrap.appendChild(div);
+}
+
 function recordExerciseFromCard(dayId, exId) {
-  const w = parseFloat(document.getElementById('rw-' + exId).value);
-  const sets = parseInt(document.getElementById('rs-' + exId).value);
-  const reps = parseInt(document.getElementById('rr-' + exId).value);
-  if (!w || !sets || !reps) { showToast('请填写完整'); return; }
+  const segs = [];
+  const wrap = document.getElementById('segs-' + exId);
+  const rows = wrap ? wrap.querySelectorAll('.rec-inputs') : [];
+  rows.forEach(row => {
+    const w = parseFloat(row.querySelector('.seg-w').value);
+    const sets = parseInt(row.querySelector('.seg-s').value);
+    const reps = parseInt(row.querySelector('.seg-r').value);
+    if (w && sets && reps) segs.push({ w, sets, reps });
+  });
+  if (segs.length === 0) { showToast('请至少填写一行记录'); return; }
   const ex = appData.days.find(d => d.id === dayId).exercises.find(e => e.id === exId);
-  const done = sets >= parseInt(ex.sets);
-  const rec = recordExercise(dayId, exId, w, sets, reps, done);
+  // 完成判定：最大重量段的组数 >= 计划组数
+  const maxSeg = segs.reduce((a, b) => b.w > a.w ? b : a);
+  const done = maxSeg.sets >= parseInt(ex.sets);
+  const rec = recordExercise(dayId, exId, segs, done);
   renderWorkout();
   renderHistory();
-  showToast(done ? `已记录 ✅ 下次建议 ${recommendWeight(ex)}kg` : `已记录（未达目标组数，连续2次将减重10%）`);
+  showToast(done ? `已记录 ✅ 下次建议 ${recommendWeight(ex)}kg` : `已记录（最大重量${maxSeg.w}kg组数${maxSeg.sets}组未达目标${ex.sets}组，连续2次将减重10%）`);
+  updateCompleteBtn();
+}
+
+function undoRecord(dayId, exId) {
+  const h = appData.history.find(h => h.date === todayStr() && h.dayId === dayId);
+  if (h) h.exercises = h.exercises.filter(e => e.id !== exId);
+  saveData();
+  renderWorkout();
   updateCompleteBtn();
 }
 

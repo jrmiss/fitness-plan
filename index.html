@@ -622,6 +622,92 @@ body {
 .cycle-step.rest { background: rgba(107,114,128,0.2); color: #9ca3af; }
 .cycle-arrow { color: var(--text-muted); }
 
+/* ===== EXERCISE RECORD ===== */
+.ex-record {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(249,115,22,0.06);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.rec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.rec-suggest { color: var(--accent-orange); font-weight: 600; }
+.rec-inputs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.rec-inputs input {
+  width: 0;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 13px;
+  outline: none;
+  text-align: center;
+}
+.rec-inputs input:focus { border-color: var(--accent-orange); }
+.rec-inputs button {
+  padding: 7px 12px;
+  background: var(--accent-orange);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rec-inputs button:hover { background: #ea580c; }
+.rec-inputs button.recorded {
+  background: var(--accent-green);
+  cursor: default;
+}
+.complete-day-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent-orange), #ea580c);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.2);
+}
+.complete-day-btn:hover { filter: brightness(1.1); }
+.complete-day-btn:disabled {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: default;
+}
+/* ===== HISTORY ===== */
+.history-list { max-height: 300px; overflow-y: auto; }
+.history-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item .h-date { color: var(--accent-orange); font-weight: 600; }
+.history-item .h-ex { color: var(--text-main); }
+
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
   body { flex-direction: column; }
@@ -757,8 +843,15 @@ body {
     </div>
     <div class="exercise-list" id="exerciseList"></div>
     <div style="padding: 0 24px 16px;">
+      <button class="complete-day-btn" id="completeDayBtn" onclick="completeToday()" disabled>完成今日训练（先记录动作）</button>
       <button class="add-exercise-btn" onclick="openAddExerciseModal(currentDayId)">+ 添加新动作</button>
     </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="info-card">
+    <h3>📜 训练历史</h3>
+    <div class="history-list" id="historyList"></div>
   </div>
 
   <!-- CHART -->
@@ -938,7 +1031,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 7,
+  version: 8,
   profile: {
     status: "恢复期",
     statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
@@ -998,7 +1091,12 @@ const DEFAULT_DATA = {
     "记录训练重量（线性递增 +2.5kg/周）",
     "肌酸 5g (训练日)",
     "睡眠 7-9 小时（恢复 > 训练）"
-  ]
+  ],
+  // 循环状态：lastDayIndex 上次练的训练日(0推/1拉/2腿)，-1=未开始
+  // round: 1=主训轮(100%) 2=轻训轮(70%)，每轮3个训练日后翻转
+  cycleState: { lastDayIndex: -1, lastDate: "", round: 1 },
+  // 训练历史：[{date, dayId, round, isLight, exercises:[{id,name,planWeight,actualWeight,sets,reps,done}]}]
+  history: []
 };
 
 // ========== STATE ==========
@@ -1019,6 +1117,8 @@ function init() {
   renderWorkout();
   renderChecklist();
   renderChart();
+  renderHistory();
+  updateCompleteBtn();
 }
 
 function loadData() {
@@ -1108,6 +1208,17 @@ function loadData() {
     saveData();
     showToast('已改为推/拉/腿三分化计划');
   }
+  // v8 迁移：补循环状态和训练历史字段（不重建训练日，保留用户自定义）
+  if (!appData.version || appData.version < 8) {
+    if (!appData.cycleState) {
+      appData.cycleState = { lastDayIndex: -1, lastDate: "", round: 1 };
+    }
+    if (!appData.history) {
+      appData.history = [];
+    }
+    appData.version = 8;
+    saveData();
+  }
   // v7 迁移：精简动作控制在1小时内（去掉绳索下压/单臂划船/提踵，压缩休息）
   if (!appData.version || appData.version < 7) {
     const oldProfile = appData.profile || {};
@@ -1146,6 +1257,101 @@ function saveData() {
   localStorage.setItem('fitnessPlanData_v2', JSON.stringify(appData));
 }
 
+// ========== 今日计划（练3休1循环） ==========
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// 返回今日训练信息：{ day: null(休息), dayIndex, isLight, round }
+function getTodayPlan() {
+  const cs = appData.cycleState;
+  // 今天已练过
+  if (cs.lastDate === todayStr()) {
+    return { day: appData.days[cs.lastDayIndex], dayIndex: cs.lastDayIndex, isLight: cs.round === 2, round: cs.round, doneToday: true };
+  }
+  // 尚未开始循环
+  if (cs.lastDayIndex === -1 || cs.lastDate === "") {
+    return { day: appData.days[0], dayIndex: 0, isLight: false, round: 1, doneToday: false };
+  }
+  // 下一个训练日（0推1拉2腿3休），推→拉→腿→休循环
+  const next = (cs.lastDayIndex + 1) % 4;
+  if (next === 3) {
+    return { day: null, dayIndex: 3, isLight: false, round: cs.round, doneToday: false };
+  }
+  return { day: appData.days[next], dayIndex: next, isLight: cs.round === 2, round: cs.round, doneToday: false };
+}
+
+// 完成今日训练：推进循环
+function advanceCycle(dayIndex) {
+  const cs = appData.cycleState;
+  cs.lastDayIndex = dayIndex;
+  cs.lastDate = todayStr();
+  // 每完成一轮（推拉腿各一次）翻转主训/轻训轮
+  if (dayIndex === 2) {
+    cs.round = cs.round === 1 ? 2 : 1;
+  }
+  saveData();
+}
+
+// ========== 记录与推荐 ==========
+function getLastRecord(exId) {
+  for (let i = appData.history.length - 1; i >= 0; i--) {
+    const h = appData.history[i];
+    const r = (h.exercises || []).find(e => e.id === exId);
+    if (r && r.done) return r;
+  }
+  return null;
+}
+
+// 最近 N 次是否连续未完成（二二法则）
+function consecutiveFail(exId) {
+  let fails = 0;
+  for (let i = appData.history.length - 1; i >= 0; i--) {
+    const r = (appData.history[i].exercises || []).find(e => e.id === exId);
+    if (!r) break;
+    if (r.done) break;
+    fails++;
+    if (fails >= 2) return true;
+  }
+  return false;
+}
+
+// 计算某个动作本次建议重量
+function recommendWeight(ex) {
+  const last = getLastRecord(ex.id);
+  const isMain = ex.tag === '主项';
+  const inc = isMain ? 2.5 : 1.25;
+  let w = (last ? last.actualWeight : ex.weight);
+  if (!last) {
+    // 无历史：用计划默认重量
+  } else if (consecutiveFail(ex.id)) {
+    w = Math.max(0, Math.round((w * 0.9) * 2) / 2); // 二二法则 -10%
+  } else if (last.done) {
+    w = Math.round((w + inc) * 2) / 2; // 完成目标 → +inc
+  }
+  const plan = getTodayPlan();
+  // 轻训日：打7折
+  if (plan.isLight) {
+    w = Math.max(0, Math.round(w * 0.7 * 2) / 2);
+  }
+  return w;
+}
+
+// 记录动作完成情况
+function recordExercise(dayId, exId, actualWeight, sets, reps, done) {
+  let record = appData.history.find(h => h.date === todayStr() && h.dayId === dayId);
+  if (!record) {
+    const plan = getTodayPlan();
+    record = { date: todayStr(), dayId, round: plan.round, isLight: plan.isLight, exercises: [] };
+    appData.history.push(record);
+  }
+  const ex = appData.days.find(d => d.id === dayId).exercises.find(e => e.id === exId);
+  record.exercises.push({ id: exId, name: ex.name, planWeight: ex.weight, actualWeight, sets, reps, done });
+  saveData();
+  return record;
+}
+
 function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -1156,6 +1362,12 @@ function showToast(msg) {
 // ========== CYCLE BANNER ==========
 function renderCycleBanner() {
   const el = document.getElementById('cycleBanner');
+  const plan = getTodayPlan();
+  const dayIdx = plan.dayIndex;
+  const stepCls = ['push','pull','legs','rest'][dayIdx] || 'push';
+  const stepName = dayIdx === 3 ? '休' : (appData.days[dayIdx] ? appData.days[dayIdx].name.split(' ')[1] || '推' : '推');
+  const mode = dayIdx === 3 ? '' : (plan.isLight ? '轻训' : '主训');
+  const doneToday = plan.doneToday ? '（今日已记录 ✅）' : '';
   el.innerHTML = `
     <div class="cycle-icon">🔄</div>
     <div>
@@ -1165,11 +1377,10 @@ function renderCycleBanner() {
         <span class="cycle-step legs">腿</span><span class="cycle-arrow">→</span>
         <span class="cycle-step rest">休</span><span class="cycle-arrow">→</span>循环
       </div>
-      <div><strong>每肌群一周 2 次</strong>（72小时黄金恢复）：第1轮主训 100% 强度，第2轮轻训重量打 7 折（主项每周最多 2 次）。</div>
+      <div>📋 <strong>今日：${dayIdx === 3 ? '休息日' : `${stepName}日 · ${mode}（第${plan.round}轮）`}</strong>${doneToday}
+        ${dayIdx === 3 ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！' : plan.isLight ? '轻训日：重量按建议打 7 折，休息缩短（复合2分钟/辅助60-90秒）。' : '主训日：按卡片建议重量练，主动作完成目标下次 +2.5kg。'}</div>
       <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
       <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
-      <div>📌 <strong>恢复期提醒</strong>：第1-2周主动作用 60% 重量（卧推45kg）找回技术，第3周过渡，第4周起正式 5×5 线性递增。</div>
-      <div>⏱ <strong>时长控制</strong>：主训日 45-50 分钟、轻训日约 35-40 分钟（含热身 5-10 分钟）。超过 75 分钟训练质量开始下降，练得久≠练得好。</div>
     </div>
   `;
 }
@@ -1251,6 +1462,21 @@ function switchDay(dayId) {
 }
 
 // ========== RENDER WORKOUT ==========
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!el) return;
+  if (!appData.history || appData.history.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:12.5px;">还没有训练记录，练完点卡片上的"✓记录"即可。</div>';
+    return;
+  }
+  const items = appData.history.slice().reverse().slice(0, 15).map(h => {
+    const day = appData.days.find(d => d.id === h.dayId);
+    const exs = (h.exercises || []).map(e => `<span class="h-ex">${e.name} ${e.actualWeight}kg×${e.sets}×${e.reps}${e.done ? '' : '(未完成)'}</span>`).join('、');
+    return `<div class="history-item"><span class="h-date">${h.date}</span> · ${day ? day.title : ''}（${h.isLight ? '轻训' : '主训'}）<br>${exs || '无动作记录'}</div>`;
+  }).join('');
+  el.innerHTML = items;
+}
+
 function renderWorkout() {
   const day = appData.days.find(d => d.id === activeDayId);
   if (!day) return;
@@ -1286,11 +1512,16 @@ function renderWorkout() {
 
   const list = document.getElementById('exerciseList');
   list.innerHTML = day.exercises.map((ex, idx) => renderExerciseCard(ex, day.id, idx)).join('');
+  updateCompleteBtn();
 }
 
 function renderExerciseCard(ex, dayId, idx) {
   const tagClass = ex.tag === '主项' ? 'tag-main' : ex.tag === '次项' ? 'tag-sub' : 'tag-aux';
   const tagBadge = ex.tag === '主项' ? 'ex-tag-main' : ex.tag === '次项' ? 'ex-tag-sub' : 'ex-tag-aux';
+  const last = getLastRecord(ex.id);
+  const recW = recommendWeight(ex);
+  const todayRec = (appData.history.find(h => h.date === todayStr() && h.dayId === dayId) || {}).exercises || [];
+  const already = todayRec.find(r => r.id === ex.id);
 
   return `
     <div class="exercise-card ${tagClass}" id="ex-${ex.id}" draggable="true"
@@ -1317,8 +1548,59 @@ function renderExerciseCard(ex, dayId, idx) {
         </div>
       </div>
       ${ex.note ? `<div class="ex-note" contenteditable="false" onclick="this.contentEditable='true';this.focus()" onblur="updateNote('${dayId}','${ex.id}',this.innerText)">${ex.note}</div>` : ''}
+      <div class="ex-record">
+        <div class="rec-row">
+          <span>上次: ${last ? `${last.actualWeight}kg×${last.sets}×${last.reps} ${last.done ? '' : '(未完成)'}` : '无记录'}</span>
+          <span class="rec-suggest">💡本次建议: ${recW}kg</span>
+        </div>
+        ${already
+          ? `<div class="rec-row"><span style="color:var(--accent-green);font-weight:600;">✅ 已记录: ${already.actualWeight}kg × ${already.sets}组 × ${already.reps}次 ${already.done ? '· 完成' : '· 未完成'}</span></div>`
+          : `<div class="rec-inputs">
+              <input type="number" placeholder="实际kg" step="0.5" id="rw-${ex.id}" value="${recW}">
+              <input type="number" placeholder="组数" id="rs-${ex.id}" value="${ex.sets}">
+              <input type="number" placeholder="次数" id="rr-${ex.id}" value="${parseInt(ex.reps) || 8}">
+              <button onclick="recordExerciseFromCard('${dayId}','${ex.id}')">✓记录</button>
+            </div>`}
+      </div>
     </div>
   `;
+}
+
+function recordExerciseFromCard(dayId, exId) {
+  const w = parseFloat(document.getElementById('rw-' + exId).value);
+  const sets = parseInt(document.getElementById('rs-' + exId).value);
+  const reps = parseInt(document.getElementById('rr-' + exId).value);
+  if (!w || !sets || !reps) { showToast('请填写完整'); return; }
+  const ex = appData.days.find(d => d.id === dayId).exercises.find(e => e.id === exId);
+  const done = sets >= parseInt(ex.sets);
+  const rec = recordExercise(dayId, exId, w, sets, reps, done);
+  renderWorkout();
+  renderHistory();
+  showToast(done ? `已记录 ✅ 下次建议 ${recommendWeight(ex)}kg` : `已记录（未达目标组数，连续2次将减重10%）`);
+  updateCompleteBtn();
+}
+
+function updateCompleteBtn() {
+  const btn = document.getElementById('completeDayBtn');
+  if (!btn) return;
+  const todayRec = (appData.history.find(h => h.date === todayStr()) || {}).exercises || [];
+  btn.disabled = todayRec.length === 0;
+  btn.textContent = todayRec.length > 0
+    ? `✅ 完成今日训练（已记录 ${todayRec.length} 个动作）`
+    : '完成今日训练（先记录动作）';
+}
+
+function completeToday() {
+  const plan = getTodayPlan();
+  if (plan.doneToday) { showToast('今日已记录过'); return; }
+  if (plan.dayIndex === 3) { showToast('今天是休息日'); return; }
+  const todayRec = (appData.history.find(h => h.date === todayStr()) || {}).exercises || [];
+  if (todayRec.length === 0) { showToast('请先记录动作'); return; }
+  advanceCycle(plan.dayIndex);
+  renderCycleBanner();
+  renderDayNav();
+  renderWorkout();
+  showToast(`已保存！明天是${plan.dayIndex + 1 >= 3 ? '休息日' : appData.days[plan.dayIndex + 1].name + ' ' + appData.days[plan.dayIndex + 1].title}`);
 }
 
 // ========== EXERCISE CRUD ==========

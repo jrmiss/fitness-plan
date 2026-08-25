@@ -1,5 +1,5 @@
 /* 健身训练计划 PWA - Service Worker：离线缓存 */
-const CACHE_NAME = 'fitness-plan-v8';
+const CACHE_NAME = 'fitness-plan-v9';
 const ASSETS = [
   './',
   './index.html',

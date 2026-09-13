@@ -1028,75 +1028,128 @@ body {
   </div>
 </div>
 
+<div class="modal-overlay" id="exGuideModal">
+  <div class="modal" style="max-width:760px;">
+    <h2 id="exGuideTitle">动作讲解</h2>
+    <div id="exGuideMeta" style="font-size:12px;color:var(--text-dim);margin:-8px 0 14px;"></div>
+    <div id="exGuideVideoWrap" style="position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden;margin-bottom:10px;">
+      <img id="exGuideCover" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">
+      <div id="exGuidePlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.32);cursor:pointer;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.95);margin:0 auto;display:flex;align-items:center;justify-content:center;">
+            <div style="width:0;height:0;border-style:solid;border-width:11px 0 11px 19px;border-color:transparent transparent transparent #111;margin-left:4px;"></div>
+          </div>
+          <div style="color:#fff;font-size:12.5px;margin-top:10px;text-shadow:0 1px 3px rgba(0,0,0,0.65);">点击在 B 站打开视频</div>
+        </div>
+      </div>
+      <iframe id="exGuideFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;display:none;"
+              allowfullscreen="true" scrolling="no" frameborder="0"></iframe>
+    </div>
+    <div id="exGuideEmbedHint" style="font-size:11.5px;color:var(--text-dim);margin-bottom:14px;">
+      本地页面无法内嵌 B 站播放器（会被 frame-ancestors 拦截）。
+      <a id="exGuideTryEmbed" style="color:var(--accent-orange);cursor:pointer;">试试内嵌播放</a>
+    </div>
+    <div id="exGuidePoints"></div>
+    <div class="modal-actions">
+      <a id="exGuideLink" href="#" target="_blank" rel="noopener"
+         style="text-decoration:none;display:inline-flex;align-items:center;padding:9px 18px;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">在 B 站打开</a>
+      <button class="btn-cancel" onclick="closeModal('exGuideModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 8,
+  version: 9,
   profile: {
     status: "恢复期",
     statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
     height: 177,
     weight: 70,
     weightSub: "BMI 22.4 - 标准范围",
-    benchEst: "50-55",
-    benchSub: "原60kg，预计下降10-15%",
-    frequency: "3天/周循环",
-    freqSub: "推/拉/腿循环 · 练3休1 · 每肌群2次/周（主训+轻训70%）"
+    benchEst: "60",
+    benchSub: "5×5 当前工作重量（1RM 约 75kg）",
+    frequency: "5天/周循环",
+    freqSub: "推A / 拉A / 腿 / 推B / 拉B + 休 · 每肌群2次/周 · 每4周减载一周"
   },
   days: [
     {
       id: "day1",
       name: "Day 1",
-      title: "推：胸+三头+肩",
-      goal: "主训日：卧推5×5线性递增是第一优先，三头顺带（树干理论）。预计 45-50分钟(含热身)，轻训日约35分钟。主训100%强度，轻训重量7折、休息缩短。",
+      title: "推A：胸为主",
+      goal: "本轮重点：上胸 + 背 + 肩。今天以杠铃卧推为主项，走 8 次区间（增肌），不组组力竭、RPE 7-8 留 2 次余量。预计 55 分钟(含热身)。",
       exercises: [
-        { id: "ex1", name: "杠铃卧推", sets: 5, reps: "5", weight: 50, rest: "2.5分钟", tag: "主项", note: "恢复期三阶段：①第1-2周45kg×4-5组×8次找回技术(RPE 6)；②第3周47.5kg切5×5；③第4周起50kg正式5×5线性递增，每周+2.5kg。不组组力竭(RPE 7-8)，4-5周后减载一周(80%或容量减半)。" },
-        { id: "ex2", name: "上斜哑铃卧推", sets: 4, reps: "8-10", weight: 17.5, rest: "90秒", tag: "主项", note: "上胸是体型第一短板，角度30度。重量到位别偷懒，注意顶峰收缩。" },
-        { id: "ex3", name: "哑铃推举", sets: 3, reps: "8-10", weight: 12.5, rest: "90秒", tag: "次项", note: "肩部推举让肩更宽更饱满，改善上半身单薄。坐姿更安全，不借力。" },
-        { id: "ex4", name: "双杠臂屈伸", sets: 3, reps: "8-12", weight: 0, rest: "90秒", tag: "", note: "复合动作同时练下胸+三头（已覆盖三头，无需再加孤立）。做不到8个做辅助式。" },
-        { id: "ex6", name: "哑铃侧平举", sets: 3, reps: "12-15", weight: 0, rest: "60秒", tag: "", note: "中束让肩变宽。轻重量重形式，避免借力甩起。" }
+        { id: "ex1", name: "杠铃卧推", sets: 4, reps: "8", weight: 55, rest: "2分钟", tag: "主项", note: "用「12RM 的重量」做 8 次 —— 做完应该还剩 2-3 次余力。8 次都轻松就 +2.5kg。别触胸过深，肩胛骨后收下沉。" },
+        { id: "ex2", name: "上斜哑铃卧推", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "主项", note: "上胸是体型第一短板，角度 30 度。下放 2-3 秒，顶峰别锁死。" },
+        { id: "ex3", name: "器械夹胸", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "胸收尾。顶峰收缩停 1 秒，感受挤压而不是甩重量。" },
+        { id: "ex4", name: "坐姿哑铃推举", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "次项", note: "坐姿更安全，不借力。最后一组留 2 次余力。" },
+        { id: "ex5", name: "绳索下压", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "三头顺带（树干理论）。大臂夹紧不动，只动小臂。" }
       ]
     },
     {
       id: "day2",
       name: "Day 2",
-      title: "拉：背+二头+后束",
-      goal: "主训日：引体向上是背部王牌动作，配合下拉和划船撑起宽度+厚度。预计 45分钟(含热身)，轻训日约35分钟。6个主动作占70%精力，二头只顺带；轻训日休息缩短。",
+      title: "拉A：背·宽度",
+      goal: "今天主打背部宽度。引体向上是背部第一优先动作，做不动就用辅助器械。预计 50 分钟(含热身)。",
       exercises: [
-        { id: "ex7", name: "引体向上(辅助)", sets: 4, reps: "5-8", weight: 0, rest: "2.5分钟", tag: "主项", note: "背部第一优先动作（张老师：引体向上是新手和卡壳者进步最快动作）。解锁后练到10×10再负重。做不了用辅助器械。" },
-        { id: "ex8", name: "高位下拉", sets: 3, reps: "8-10", weight: 40, rest: "90秒", tag: "主项", note: "从40kg开始(原50kg)，握距略宽于肩，拉至锁骨。宽度优先，线性递增每周+2.5kg。" },
-        { id: "ex9", name: "坐姿划船(宽握)", sets: 3, reps: "8-10", weight: 45, rest: "90秒", tag: "主项", note: "背部厚度动作。挺胸，肩胛骨后收，拉至腹部位置。" },
-        { id: "ex11", name: "面拉", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "后束+改善圆肩体态。双手外旋至耳高度，让你站直后更有型。" },
-        { id: "ex12", name: "哑铃弯举", sets: 2, reps: "10-12", weight: 0, rest: "60秒", tag: "", note: "二头只顺带2组（树干理论：别特意练手臂）。" }
+        { id: "ex6", name: "引体向上(辅助)", sets: 4, reps: "6-8", weight: 0, rest: "2分钟", tag: "主项", note: "背部第一优先（张老师：新手和卡壳者进步最快的动作）。解锁后练到 10×10 再负重。" },
+        { id: "ex7", name: "高位下拉", sets: 4, reps: "10", weight: 45, rest: "90秒", tag: "主项", note: "握距略宽于肩，拉至锁骨。用背发力，别用手臂拽。" },
+        { id: "ex8", name: "面拉", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "后束 + 改善圆肩。拉至耳高度，双手外旋。" },
+        { id: "ex9", name: "哑铃弯举", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "二头顺带，大臂固定别晃。" }
       ]
     },
     {
       id: "day3",
       name: "Day 3",
-      title: "腿：腿部塑形",
-      goal: "主训日：中高次数塑形练紧致腿型，不追求大重量增粗。预计 50分钟(含热身)，轻训日约40分钟。深蹲为主项线性推进，腿后链+臀部重点；轻训日休息缩短。",
+      title: "腿：深蹲+后链",
+      goal: "动作质量第一。深蹲你只练过几次，今天宁轻勿重，把动作框架练稳。预计 60 分钟(含热身)。",
       exercises: [
-        { id: "ex13", name: "杠铃深蹲(中高次数)", sets: 4, reps: "8-10", weight: 40, rest: "2.5分钟", tag: "主项", note: "深蹲为王。塑形期用8-10次中等重量，每周+2.5kg线性推进，4-5周减载。动作质量大于重量。" },
-        { id: "ex14", name: "罗马尼亚硬拉", sets: 4, reps: "10-12", weight: 40, rest: "90秒", tag: "次项", note: "腿后链和臀部王牌动作，让腿型更紧实。恢复期第1-2周用30-35kg学动作找回硬拉技术，第3周起40kg正式推进，每周+2.5%。" },
-        { id: "ex16", name: "腿举(中高次数)", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "高次数泵感训练，重量适中，重点是收缩感受。" },
-        { id: "ex17", name: "保加利亚分腿蹲", sets: 3, reps: "10-12", weight: 0, rest: "60秒", tag: "", note: "单腿塑形动作。后脚背放凳子上，躯干微前倾。" },
-        { id: "ex18", name: "坐姿腿弯举", sets: 3, reps: "15-20", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立动作。顶峰收缩停留1秒。" },
-        { id: "ex20", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "45秒", tag: "", note: "平板支撑45-60秒 + 悬垂举腿10-15次，练腿日顺带练核心。" }
+        { id: "ex10", name: "杠铃深蹲", sets: 4, reps: "8", weight: 50, rest: "2.5分钟", tag: "主项", note: "动作质量 > 重量。膝盖跟脚尖同方向，蹲到大腿接近平行，起身先站直髋。动作一变就减重。" },
+        { id: "ex11", name: "罗马尼亚硬拉", sets: 3, reps: "10", weight: 40, rest: "2分钟", tag: "次项", note: "你也只练过几次 —— 髋部向后推，背部全程中立，感受大腿后侧拉伸。轻一点没关系。" },
+        { id: "ex12", name: "腿举", sets: 3, reps: "12", weight: 0, rest: "90秒", tag: "", note: "脚距与肩同宽，不要锁死膝盖。" },
+        { id: "ex13", name: "坐姿腿弯举", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立。顶峰收缩停 1 秒。" },
+        { id: "ex14", name: "站姿提踵", sets: 2, reps: "15", weight: 0, rest: "60秒", tag: "", note: "小腿。底部充分下沉，顶部停 1 秒。" },
+        { id: "ex15", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "45秒", tag: "", note: "平板支撑 45-60 秒 + 悬垂举腿 10-15 次。" }
+      ]
+    },
+    {
+      id: "day4",
+      name: "Day 4",
+      title: "推B：上胸+肩",
+      goal: "本周第二次推，重点补上胸和肩中束。今天不上平板卧推，用上斜 + 侧平举把弱项打透。预计 50 分钟(含热身)。",
+      exercises: [
+        { id: "ex16", name: "上斜杠铃卧推", sets: 4, reps: "10", weight: 40, rest: "2分钟", tag: "主项", note: "上胸专项。角度 30-40 度，下放到上胸位置，别让肩膀往前跑。" },
+        { id: "ex17", name: "哑铃侧平举", sets: 4, reps: "15", weight: 0, rest: "60秒", tag: "主项", note: "中束让肩变宽。轻重量重形式，肘带手，别耸肩甩起。" },
+        { id: "ex18", name: "反向飞鸟", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "后束 + 体态。躯干稳定，用后束把手臂打开。" },
+        { id: "ex19", name: "双杠臂屈伸", sets: 3, reps: "8-10", weight: 0, rest: "90秒", tag: "", note: "下胸+三头。你之前在这里肩部有瞬间刺激 —— 下放浅一点、肩膀别过度前伸；一有不适就换成绳索下压。" }
+      ]
+    },
+    {
+      id: "day5",
+      name: "Day 5",
+      title: "拉B：背·厚度",
+      goal: "第二次拉，主打背部厚度（划船类）。预计 50 分钟(含热身)。",
+      exercises: [
+        { id: "ex20", name: "杠铃划船", sets: 3, reps: "8", weight: 20, rest: "2分钟", tag: "主项", note: "★你没做过 —— 从空杆 20kg 起，先专门解决「腰酸」这个信号。屈髋（屁股向后）不是弯腰，躯干 45 度，背成直线，先夹肩胛再拉向下腹，下放数 3 秒。腰不酸了再加重。详见 动作学习_杠铃划船.md" },
+        { id: "ex21", name: "单臂哑铃划船", sets: 3, reps: "10", weight: 17.5, rest: "90秒", tag: "主项", note: "每侧独立。肩胛骨后收，别用身体旋转借力。" },
+        { id: "ex23", name: "哑铃弯举", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "二头顺带，大臂固定别晃。" }
       ]
     },
   ],
   checklist: [
     "训练前热身激活 5-10分钟（激活 > 训练）",
     "主动作不组组力竭（RPE 7-8，留2次余量）",
-    "记录训练重量（线性递增 +2.5kg/周）",
+    "记录训练重量与次数（8次都轻松就 +2.5kg）",
     "肌酸 5g (训练日)",
+    "蛋白质吃到 1.6-2.2g/kg（70kg ≈ 112-154g）",
     "睡眠 7-9 小时（恢复 > 训练）"
   ],
-  // 循环状态：lastDayIndex 上次练的训练日(0推/1拉/2腿)，-1=未开始
-  // round: 1=主训轮(100%) 2=轻训轮(70%)，每轮3个训练日后翻转
-  cycleState: { lastDayIndex: -1, lastDate: "", round: 1 },
+  // 循环状态：lastDayIndex 上次练的训练日(0..n-1)，-1=未开始；休息日索引 = days.length
+  // round: 1=正常轮 2=减载轮(重量打7折)；cyclesDone 每走完一轮 +1，每 4 轮安排一次减载
+  cycleState: { lastDayIndex: -1, lastDate: "", round: 1, cyclesDone: 0, restTaken: false },
   // 训练历史：[{date, dayId, round, isLight, exercises:[{id,name,planWeight,actualWeight,sets,reps,done}]}]
   history: []
 };
@@ -1167,6 +1220,22 @@ function loadData() {
     appData = newData;
     saveData();
     showToast('已升级到体型定制版计划');
+  }
+  // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
+  // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间
+  if (!appData.version || appData.version < 9) {
+    const oldProfile = appData.profile || {};
+    const oldHistory = appData.history || [];
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    ['status','statusSub','height','weight'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '') newData.profile[k] = oldProfile[k];
+    });
+    newData.history = oldHistory;   // 保留既有训练历史
+    newData.cycleState = { lastDayIndex: -1, lastDate: "", round: 1, cyclesDone: 0, restTaken: false };
+    newData.version = 9;
+    appData = newData;
+    saveData();
+    showToast('已升级：5天/周增肌计划（推A/拉A/腿/推B/拉B）');
   }
   // v4 迁移：移除臀桥和有氧燃脂训练（用户要求先不减脂）
   if (!appData.version || appData.version < 4) {
@@ -1268,18 +1337,33 @@ function todayStr() {
 // 返回今日训练信息：{ day: null(休息), dayIndex, isLight, round }
 function getTodayPlan() {
   const cs = appData.cycleState;
+  const dayCount = appData.days.length;
+  const restIndex = dayCount;   // 休息日索引固定等于训练日数量
   // 今天已练过
   if (cs.lastDate === todayStr()) {
-    return { day: appData.days[cs.lastDayIndex], dayIndex: cs.lastDayIndex, isLight: cs.round === 2, round: cs.round, doneToday: true };
+    return {
+      day: cs.lastDayIndex >= restIndex ? null : appData.days[cs.lastDayIndex],
+      dayIndex: cs.lastDayIndex,
+      isLight: cs.round === 2,
+      round: cs.round,
+      doneToday: true
+    };
   }
   // 尚未开始循环
   if (cs.lastDayIndex === -1 || cs.lastDate === "") {
-    return { day: appData.days[0], dayIndex: 0, isLight: false, round: 1, doneToday: false };
+    return { day: appData.days[0], dayIndex: 0, isLight: cs.round === 2, round: cs.round, doneToday: false };
   }
-  // 下一个训练日（0推1拉2腿3休），推→拉→腿→休循环
-  const next = (cs.lastDayIndex + 1) % 4;
-  if (next === 3) {
-    return { day: null, dayIndex: 3, isLight: false, round: cs.round, doneToday: false };
+  // 下一个训练日；走到最后一个训练日的下一天就是休息日
+  let next = (cs.lastDayIndex + 1) % (dayCount + 1);
+  if (next === restIndex) {
+    // 休息日只占一天：展示一次后标记，第二天自动进入新一轮
+    if (cs.restTaken) {
+      next = 0;
+    } else {
+      cs.restTaken = true;
+      saveData();
+      return { day: null, dayIndex: restIndex, isLight: false, round: cs.round, doneToday: false };
+    }
   }
   return { day: appData.days[next], dayIndex: next, isLight: cs.round === 2, round: cs.round, doneToday: false };
 }
@@ -1289,9 +1373,11 @@ function advanceCycle(dayIndex) {
   const cs = appData.cycleState;
   cs.lastDayIndex = dayIndex;
   cs.lastDate = todayStr();
-  // 每完成一轮（推拉腿各一次）翻转主训/轻训轮
-  if (dayIndex === 2) {
-    cs.round = cs.round === 1 ? 2 : 1;
+  // 走完一整轮（所有训练日各一次）后计数；每 4 轮安排一次减载轮
+  cs.restTaken = false;   // 完成训练日 -> 下一次休息日需要重新展示
+  if (dayIndex === appData.days.length - 1) {
+    cs.cyclesDone = (cs.cyclesDone || 0) + 1;
+    cs.round = (cs.cyclesDone % 4 === 0) ? 2 : 1;
   }
   saveData();
 }
@@ -1370,8 +1456,9 @@ function renderCycleBanner() {
   const plan = getTodayPlan();
   const dayIdx = plan.dayIndex;
   const stepCls = ['push','pull','legs','rest'][dayIdx] || 'push';
-  const stepName = dayIdx === 3 ? '休' : (appData.days[dayIdx] ? appData.days[dayIdx].name.split(' ')[1] || '推' : '推');
-  const mode = dayIdx === 3 ? '' : (plan.isLight ? '轻训' : '主训');
+  const isRest = dayIdx >= appData.days.length;
+  const stepName = isRest ? '休' : (appData.days[dayIdx] ? (appData.days[dayIdx].name + ' ' + appData.days[dayIdx].title) : '训练');
+  const mode = isRest ? '' : (plan.isLight ? '减载' : '正常');
   const doneToday = plan.doneToday ? '（今日已记录 ✅）' : '';
   el.innerHTML = `
     <div class="cycle-icon">🔄</div>
@@ -1382,8 +1469,8 @@ function renderCycleBanner() {
         <span class="cycle-step legs">腿</span><span class="cycle-arrow">→</span>
         <span class="cycle-step rest">休</span><span class="cycle-arrow">→</span>循环
       </div>
-      <div>📋 <strong>今日：${dayIdx === 3 ? '休息日' : `${stepName}日 · ${mode}（第${plan.round}轮）`}</strong>${doneToday}
-        ${dayIdx === 3 ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！' : plan.isLight ? '轻训日：重量按建议打 7 折，休息缩短（复合2分钟/辅助60-90秒）。' : '主训日：按卡片建议重量练，主动作完成目标下次 +2.5kg。'}</div>
+      <div>📋 <strong>今日：${isRest ? '休息日' : `${stepName} · ${mode}`}</strong>${doneToday}
+        ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练，8 次都轻松就 +2.5kg。'}</div>
       <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
       <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
     </div>
@@ -1482,7 +1569,7 @@ function renderHistory() {
   const items = appData.history.slice().reverse().slice(0, 15).map(h => {
     const day = appData.days.find(d => d.id === h.dayId);
     const exs = (h.exercises || []).map(e => `<span class="h-ex">${e.name} ${fmtRecText(e)}${e.done ? '' : '(未完成)'}</span>`).join('、');
-    return `<div class="history-item"><span class="h-date">${h.date}</span> · ${day ? day.title : ''}（${h.isLight ? '轻训' : '主训'}）<br>${exs || '无动作记录'}</div>`;
+    return `<div class="history-item"><span class="h-date">${h.date}</span> · ${day ? day.title : ''}（${h.isLight ? '减载' : '正常'}）<br>${exs || '无动作记录'}</div>`;
   }).join('');
   el.innerHTML = items;
 }
@@ -1543,7 +1630,7 @@ function renderExerciseCard(ex, dayId, idx) {
          ondragover="onDragOver(event)"
          ondrop="onDrop(event, '${dayId}', '${ex.id}')">
       <div class="ex-row1">
-        <span class="ex-name" onclick="openEditExerciseModal('${dayId}', '${ex.id}')">${idx+1}. ${ex.name}</span>
+        <span class="ex-name" style="cursor:pointer;" onclick="openExGuide('${ex.id}')" title="点击看动作讲解">${idx+1}. ${ex.name}<span style="font-size:11px;color:var(--accent-orange);margin-left:6px;font-weight:400;white-space:nowrap;">▶ 讲解</span></span>
         <div class="ex-actions">
           ${ex.tag ? `<span class="ex-tag ${tagBadge}">${ex.tag}</span>` : ''}
           <button class="icon-btn drag-btn" title="拖拽排序" draggable="true">⠿</button>
@@ -1646,14 +1733,14 @@ function updateCompleteBtn() {
 function completeToday() {
   const plan = getTodayPlan();
   if (plan.doneToday) { showToast('今日已记录过'); return; }
-  if (plan.dayIndex === 3) { showToast('今天是休息日'); return; }
+  if (plan.dayIndex >= appData.days.length) { showToast('今天是休息日'); return; }
   const todayRec = (appData.history.find(h => h.date === todayStr()) || {}).exercises || [];
   if (todayRec.length === 0) { showToast('请先记录动作'); return; }
   advanceCycle(plan.dayIndex);
   renderCycleBanner();
   renderDayNav();
   renderWorkout();
-  showToast(`已保存！明天是${plan.dayIndex + 1 >= 3 ? '休息日' : appData.days[plan.dayIndex + 1].name + ' ' + appData.days[plan.dayIndex + 1].title}`);
+  showToast(`已保存！明天是${plan.dayIndex + 1 >= appData.days.length ? '休息日' : appData.days[plan.dayIndex + 1].name + ' ' + appData.days[plan.dayIndex + 1].title}`);
 }
 
 // ========== EXERCISE CRUD ==========
@@ -1699,6 +1786,86 @@ function clearAddForm() {
   document.getElementById('newExRest').value = '90秒';
   document.getElementById('newExTag').value = '';
   document.getElementById('newExNote').value = '';
+}
+
+// ========== 动作讲解（凯圣王 B站教学视频） ==========
+// 视频与解析数据在文件末尾的 EX_GUIDE
+function findGuide(name) {
+  if (!name) return null;
+  if (EX_GUIDE[name]) return EX_GUIDE[name];
+  let best = null, bestLen = 0;
+  for (const k of Object.keys(EX_GUIDE)) {
+    if (name.indexOf(k) !== -1 || k.indexOf(name) !== -1) {
+      if (k.length > bestLen) { best = EX_GUIDE[k]; bestLen = k.length; }
+    }
+  }
+  return best;
+}
+
+function openExGuide(exId) {
+  let ex = null;
+  for (const d of appData.days) {
+    const e = (d.exercises || []).find(x => x.id === exId);
+    if (e) { ex = e; break; }
+  }
+  if (!ex) return;
+  const g = findGuide(ex.name);
+  document.getElementById('exGuideTitle').textContent = ex.name;
+  const meta = document.getElementById('exGuideMeta');
+  const wrap = document.getElementById('exGuideVideoWrap');
+  const cover = document.getElementById('exGuideCover');
+  const play = document.getElementById('exGuidePlay');
+  const frame = document.getElementById('exGuideFrame');
+  const hint = document.getElementById('exGuideEmbedHint');
+  const tryBtn = document.getElementById('exGuideTryEmbed');
+  const pts = document.getElementById('exGuidePoints');
+  const link = document.getElementById('exGuideLink');
+  if (!g) {
+    meta.textContent = '';
+    wrap.style.display = 'none';
+    frame.style.display = 'none';
+    frame.removeAttribute('src');
+    if (hint) hint.style.display = 'none';
+    pts.innerHTML = '<p style="color:var(--text-dim);font-size:13px;line-height:1.8;margin:0;">这个动作还没匹配到讲解视频。</p>';
+    link.style.display = 'none';
+  } else {
+    const url = 'https://www.bilibili.com/video/' + g.bv + '/';
+    meta.textContent = '讲解来源：' + (g.owner || '凯圣王') + ' · B站《' + g.title + '》';
+    wrap.style.display = '';
+    cover.style.display = '';
+    cover.src = g.pic || '';
+    cover.onerror = function () { this.style.display = 'none'; };
+    play.style.display = '';
+    play.onclick = function () { window.open(url, '_blank', 'noopener'); };
+    frame.style.display = 'none';
+    frame.removeAttribute('src');
+    if (hint) hint.style.display = '';
+    tryBtn.textContent = '试试内嵌播放';
+    tryBtn.onclick = function () {
+      if (frame.style.display === 'none') {
+        cover.style.display = 'none';
+        play.style.display = 'none';
+        frame.style.display = '';
+        frame.src = 'https://player.bilibili.com/player.html?bvid=' + g.bv + '&autoplay=0&danmaku=0&high_quality=1';
+        this.textContent = '关掉内嵌播放';
+      } else {
+        frame.style.display = 'none';
+        frame.removeAttribute('src');
+        cover.style.display = '';
+        play.style.display = '';
+        this.textContent = '试试内嵌播放';
+      }
+    };
+    pts.innerHTML = '<div style="font-size:13px;line-height:1.85;color:var(--text);">' +
+      (g.points || []).map(function (p) {
+        return '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
+               '<span style="color:var(--accent-orange);flex:0 0 auto;">•</span>' +
+               '<span>' + p + '</span></div>';
+      }).join('') + '</div>';
+    link.style.display = '';
+    link.href = url;
+  }
+  document.getElementById('exGuideModal').classList.add('active');
 }
 
 function openEditExerciseModal(dayId, exId) {
@@ -1980,6 +2147,411 @@ function resetData() {
   renderChecklist();
   showToast('已重置为默认计划');
 }
+
+// ========== 动作讲解数据（凯圣王 B站教学视频） ==========
+const EX_GUIDE = {
+  "杠铃卧推": {
+    "bv": "BV1yW42197Az",
+    "title": "卧推开发详解",
+    "points": [
+      "<b>别想「把杠铃推上去」，要想「大臂水平内收」</b> —— 往里收，不是往上够。一想到往上推，就会含胸，靠三头和肩硬顶。",
+      "<b>收下巴</b>，不要向后仰头 —— 仰头会让颈椎承压。",
+      "离心时肩胛要<b>内收 + 下降 + 下回旋</b>。压不住肩胛，肩就会前旋，三角肌前束被迫参与变多、胸也发不上力，二头长头肌腱还可能不适。",
+      "「掰杠」的目的是<b>找到肩胛下回旋、给大臂扭矩</b>。过分内旋会肩峰撞击，所以要外旋 + 肩胛下回旋，这样肩前压力小很多。",
+      "向心时<b>别耸肩</b> —— 肩胛过分上提就是耸肩，此时胸背都被放松，重量全压到肩和三头身上。",
+      "推到后半程卡住，<b>一半以上是肩胛松掉了或肩胛下角翘起来了</b>。到顶时胸要<b>主动收缩</b>，不是把手臂伸直就算完。",
+      "杠铃<b>就是要触胸</b>。不触胸那叫暂停卧推，是另一个动作。如果肩不适，应该短暂卸掉张力，而不是改成不触胸。",
+      "握距：<b>新手用中等握距</b>。太宽行程短、胸内侧外侧都练不到；太窄考验活动度，手腕吃不消。",
+      "一句话总结：<b>肩胛就是这辆车的底盘</b>。肩胛贴住胸廓、前锯肌张力足，卧推才稳，才谈得上加重量。",
+      "自测法：背靠墙站，向前半步，模拟卧推 —— 下放时感受两个肩胛<b>向中间夹、把身体顶起来</b>。找不到这个感觉，就先练这个。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/4edd0a281c1ac9ce70d27e80d30576e2d05a9a56.jpg",
+    "owner": "凯圣王"
+  },
+  "上斜哑铃卧推": {
+    "bv": "BV1aa4y1o7XA",
+    "title": "上斜哑铃卧推详解",
+    "points": [
+      "<b>拿放先讲</b>：用硬拉姿势从地上拿起哑铃，放在膝盖远端；坐下时<b>先靠背再后仰</b>，别没坐稳就往后倒（会给肩压力）。单腿靠凳更稳。",
+      "<b>凳子角度 30-40 度</b>是中规中矩的选择。有肱骨前移、圆肩驼背的人<b>别调太高</b>，肩压力会很大。肩活动度好、想加强上胸+前束的可以调高一些。",
+      "哑铃比杠铃<b>行程更长、顶峰收缩更好</b> —— 杠铃时手固定在远端，水平内收做不完整。想堆上胸肌肉量，哑铃更有优势。",
+      "腰要<b>离开凳子一点</b>、胸椎有活动度；但<b>别拿腰使劲往上顶</b>，那是腰椎代偿，练完腰酸。",
+      "<b>小臂保持垂直</b>。往里扣 → 三头发力变多、水平内收幅度变小；前后倒 → 肩压力大，甚至变成反关节。",
+      "发力方向有四个：<b>收下巴（颈向后）+ 胸往上顶 + 两个肘向内收 + 手臂往里走</b>。",
+      "别想「往上推」，想「往里收」；很多人一动「往上推」的念头就含胸了。",
+      "到顶要<b>真的收紧</b>（顶峰收缩），不是推起来就完事。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/d878eb9ac8f897869af8fb616bbd5f7e5b02e4cf.jpg",
+    "owner": "凯圣王"
+  },
+  "器械夹胸": {
+    "bv": "BV1fTyVYDE1j",
+    "title": "蝴蝶机夹胸详解",
+    "points": [
+      "为什么比哑铃飞鸟好：<b>全程持续抗阻</b>。哑铃飞到胸口正上方时已经没阻力了，蝴蝶机从底到顶都有。",
+      "凳子高度：<b>握把跟胸同高</b>。",
+      "前后档位调到<b>第三档左右</b>就行。太往后抗阻基本落在肩上，胸的刺激减少、风险还升高。",
+      "<b>别贴着靠背坐</b>，坐中间靠前一点 —— 贴紧坐向后时肩胛会被提起来、容易悬前，造成卡压。",
+      "配重别信数字：<b>有动滑轮的器械，实际重量约等于标称的一半</b>，不同品牌差异很大。按本体感受练。",
+      "不做 6 次以下的重量（力臂长，肩压力大），<b>用 12-20 次</b>。",
+      "握法：<b>单侧起杠</b>，手掌下缘顶住把手（用手掌中间容易小臂发力），把手臂的力量过滤掉。",
+      "离心阶段用<b>胸式呼吸</b>把胸腔吸满，胸大肌会被进一步拉长、参与更多。",
+      "动作意象：<b>像抱一棵树、抱一个人</b> —— 小臂内侧、大臂内侧、肘关节都朝前。别过分内旋（肩峰卡压），也别过分外旋（活动度被锁死）。",
+      "两种用法：放在练胸<b>第一个动作做激活</b>；或放在<b>最后做 12-20 次的代谢压力</b>动作，顺便当动态拉伸。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/f6a2b0e9034217e24fae1bf6cec30dff4571c690.jpg",
+    "owner": "凯圣王"
+  },
+  "坐姿哑铃推举": {
+    "bv": "BV1uw411N7MC",
+    "title": "坐姿哑铃推肩详解",
+    "points": [
+      "<b>拿放是难点</b>：别弯腰拿！用硬拉姿势半蹲下去拿，上身保持直立，手腕不承压；坐下后放在大腿远端、单腿顶起来。",
+      "握法：<b>握中间，别握两端、别握太靠上</b>（靠上手腕会塌）。",
+      "座椅：优先选<b>有斜度的凳子</b>（屁股能贴住，胸椎有活动度，对肩友好）。<b>只有直凳就把屁股往前坐一点</b> —— 否则胸椎活动不开，肩容易悬前卡压，二头长头肌腱会不舒服。",
+      "<b>不要在冠状面（正侧面）推</b>，容易撞击肩峰。除非你肩有维度、没有肱骨前移和圆肩驼背、外展外旋活动度够。<b>建议 35 度左右的角度</b>。",
+      "<b>小臂必须垂直地面</b>。往里倒 → 三头发力变多、肘压力大；往后往外 → 力臂变长、肩压力大、二头被激活。",
+      "史密斯机：<b>优点是容错率高，缺点也正是容错率高</b> —— 小臂倒了也能推起来，你以为练到了，其实在慢慢积累炎症。",
+      "行程：小重量（12 次以上）可以全幅度；<b>用 8-12 次的重量就做大半程</b>，保持三角肌持续张力。",
+      "落点：<b>大臂平行地面再往下约 10 度</b>就够了。放太低会不适、胸大肌会抢着参与。",
+      "呼吸：12 次以上，下放用鼻吸、上推用口呼。肘稍微往前一点，肩的感觉更好。",
+      "<b>这个动作适合 8-12 次，不适合冲大重量</b>（球窝关节灵活但稳定性差）。想上重量改用杠铃或史密斯。",
+      "保护手法：手托在肘的位置给<b>向上的力</b>，绝不能往里的力 —— 往里推是反关节，非常危险，遇到了立刻叫停。"
+    ],
+    "pic": "https://i0.hdslb.com/bfs/archive/60b2348c267d0c733b34a5e1911aff72b6f52062.jpg",
+    "owner": "凯圣王"
+  },
+  "引体向上": {
+    "bv": "BV1tf421Q7th",
+    "title": "引体向上详解",
+    "points": [
+      "引体是<b>远固定动作 + 自重</b>，比器械更考验肩关节稳定性。",
+      "握距：新手<b>比肩宽一拳</b>就行。别握太宽，很考验肩胛下回旋功能，肩胛功能不足就只能耸肩拉，肩会别扭。",
+      "握力不够<b>可以用拉带</b>，否则小臂先充血、背还没练到。",
+      "<b>向心阶段绝对不能在耸肩状态下完成</b> —— 先把肩胛<b>下降（沉肩）+ 下回旋</b>，拉到底还有内收。这是引体最核心的一点。",
+      "身体<b>微微后倾</b>；手握杠后找一种<b>向前压</b>的感觉；<b>肘往内收</b>（肘一打开三角肌后束就发力，背阔肌反而不好发力）。",
+      "不要甩、不要荡（形体训练范畴）—— 甩起来就丧失有效性了。",
+      "行程标准<b>看肩胛，不看下巴</b>：肩胛收紧了就是完整行程，下巴不一定非要过杠。",
+      "<b>离心极其重要</b>：有意识地让肩胛上回旋、推开，想象背阔肌被延伸。别把注意力放在手臂上。顶上有轻微耸肩正常。",
+      "不要在上方变成含胸 —— 那样二头会大量借力。",
+      "零基础解锁：踩凳子跳上去停住，<b>做慢离心（一组 6-8 次）</b>；配合弹力带引体、澳式引体、反握过渡。<b>最不推荐宽握</b>。",
+      "力量角度（粗人分享）：引体是三大项的辅助项 —— 深蹲靠背承载杠铃、卧推靠肩胛内收后缩下回旋、硬拉启动靠背部张力，引体都能练到。",
+      "<b>一周练 3 次没问题，每次 3 组 5 次</b>，按周提升容量。总容量不高，恢复压力小。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/1a28af77534a41ead3fcf6e61640e199ffe42a6b.jpg",
+    "owner": "凯圣王"
+  },
+  "高位下拉": {
+    "bv": "BV1dC4y1r7nQ",
+    "title": "高位下拉详解",
+    "points": [
+      "为什么比引体容易：它是<b>近固定</b>动作，对肩胛的要求没有引体那么高。新手前期用它比引体更高效也更安全。",
+      "先用卡腿垫把身体固定住。",
+      "握距：<b>比肩宽一拳</b>左右。",
+      "握法：<b>全握</b>（攥紧能激活手臂筋膜链、帮助肩关节稳定），但别使劲往里捏 —— 那会激活小臂。握力弱<b>可以带拉带</b>，你不是去比赛抓力。",
+      "<b>弱化小臂和大臂</b>，别让它们绷着劲，让负重直接跟<b>肩胛</b>建立联系。",
+      "身体<b>接近直立、微微后倾</b>就够。过分后倾等于把冠状面动作做成矢状面动作 —— 背阔和大圆收益变小、中下斜方参与变多。",
+      "<b>别想「把杆拉下来」</b>，要想「以脊柱为中心，两边肩胛下回旋 + 下降 + 内收」去带动肘。",
+      "小臂<b>放松、垂直</b>；发力方向是上下（冠状面），不是前后。小臂一歪，三角肌后束和三头就顶上来了，背阔反而放松。",
+      "<b>别为了拉得更低而耸肩</b> —— 过分往下肩胛会上提，背的收益更低。",
+      "幅度<b>以肌肉和肩胛为准</b>：下回旋下降到收紧就够了，不一定非要碰到胸。",
+      "离心：肩胛<b>上回旋 + 微微上提</b>（别硬保持下沉，那样会肩峰撞击，也不符合肩肱节律）。上放时也要控制张力，别被重量「奔上去」。",
+      "<b>先给一个预设张力</b>（像硬拉那样），让负重挂在背上，再用肩胛下回旋带动。别还在耸肩状态就开始往下蹬。",
+      "呼吸：下拉呼气，上放吸气。",
+      "别为了大重量让屁股离凳、身体过分后倾 —— 那样没有顶峰收缩、没有离心控制，看起来「更像在干活」。",
+      "握越宽：大圆和中下斜方参与更多、受力更靠上、能用重量更少。握越窄：背阔和大圆参与更多。",
+      "<b>宽握肩疼的原因通常是肩胛下回旋功能不够</b>。如果宽握肩疼，别在这个动作上冲大重量。",
+      "颈后下拉练的是中下斜方和菱形肌，但<b>对肩关节要求极高</b>：有肱骨前移或圆肩驼背的人做会直接肩峰撞击，还可能伤到二头长头肌腱或冈上肌。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/68b046cfdedd7116ba1808cdb356fb486277e3ee.jpg",
+    "owner": "凯圣王"
+  },
+  "面拉": {
+    "bv": "BV1xV6JYTEEB",
+    "title": "背+后束加强动作详解",
+    "points": [
+      "用<b>哑铃</b>，绝对不用杠铃。趴在上斜凳上做（健身房有海豹划船器械更好）。",
+      "握在哑铃<b>中间</b>、手掌包实，<b>手腕微微内扣一点</b> —— 绝不能仰腕，仰腕小臂会非常累。",
+      "头：脑门<b>不要跟凳子对抗</b>，可以离开 1-2 厘米，<b>不能过分仰头</b>。大腿和腰要放松，腰不能悬空。",
+      "动作想象：<b>向两侧画一个半圆</b> —— 先够地面，再够对侧的墙，最后够天花板。",
+      "高度<b>不用跟地面平行</b>，做到<b>肩胛收紧</b>就够。",
+      "<b>以肩胛为主</b>带动，肘可以稍微打开一点；想象两个手中间有一根皮筋，把它拉开。",
+      "向上<b>不能甩</b>要控制，<b>向上呼气、向下吸气</b>；回到底部<b>停 0.5 秒</b>再开始下一次。",
+      "底部停 0.5 秒的意义：避免借力，同时读懂肩胛状态（离心时肩胛是<b>外展</b>的）。",
+      "<b>不要用腰向上带</b> —— 出现这个说明重量太沉，减重。",
+      "重量区间 <b>12-20 次</b>（力臂很长，跟侧平举一样）；6 次、8 次会非常费劲。",
+      "小臂太紧或角度不对会小臂酸痛，这是不好的现象 —— <b>只要哑铃不转就够</b>。手、肘、大臂内侧保持<b>相对</b>，别加没必要的内旋外旋。",
+      "离心要用后束的肌肉<b>控制着放</b>，不能自由落体（下面悬空，肩肘腕都有隐患），全程保持张力。",
+      "大臂<b>不能往内夹太多</b>，否则背阔会参与进来，要外展。",
+      "用法：放在练背的<b>最后一个动作</b>；练胸日也常放最后，用来平衡前后侧张力、让腰少参与。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/aa3f7c8f8c7befd3df5ce5ea2c347593f992130d.jpg",
+    "owner": "凯圣王"
+  },
+  "反向飞鸟": {
+    "bv": "BV1xV6JYTEEB",
+    "title": "背+后束加强动作详解",
+    "points": [
+      "这个动作的本质就是<b>大臂水平外展</b>（向两侧画半圆），反向后束和后背中间的位置。",
+      "用<b>哑铃</b>，趴在上斜凳上。握在哑铃中间、手掌包实，<b>手腕微微内扣</b>（别仰腕）。",
+      "想象<b>向两侧画半圆</b>：先够地面 → 再够对侧的墙 → 最后够天花板。做到<b>肩胛收紧</b>就停，不必与地面平行。",
+      "<b>大臂不能往内夹</b>，一定要外展，否则背阔会抢着参与。",
+      "以<b>肩胛向内收缩</b>带动；想象两手之间有一根皮筋，把它拉开。",
+      "向上<b>不能甩</b>，<b>向上呼气、向下吸气</b>；到底部<b>停 0.5 秒</b>，确认肩胛回到外展状态。",
+      "离心<b>用后束控制着放</b>，不能自由落体；中途累了可以在底部多停 1-2 秒再继续。",
+      "重量 <b>12-20 次</b>区间；出现“腰向上带”就是重量太沉了。",
+      "用法：练背最后一个动作，或练胸日放最后平衡前后侧张力（练胸那天前侧张力大，正好用这个拉一拉后侧）。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/aa3f7c8f8c7befd3df5ce5ea2c347593f992130d.jpg",
+    "owner": "凯圣王"
+  },
+  "哑铃弯举": {
+    "bv": "BV1Fp4y1d73D",
+    "title": "哑铃弯举详解",
+    "points": [
+      "三条底线（他的原话叫“君子协议”）：<b>全程有张力、顶峰主动收缩、离心有控制</b>。在这三条都做到的基础上，再选重量。",
+      "次数 <b>8-15 次</b>，再多意义不大。",
+      "握法：握哑铃<b>中间靠下</b>，放在<b>手腕近端</b>，起来时有“把哑铃托起来”的感觉。别握手掌前部（有虚位、小臂受力），也别太靠上。",
+      "身体<b>微微前倾</b>，固定好髋和膝；膝<b>尽量伸直但不锁死</b>（明显屈膝就会借力）。",
+      "为什么不能站直或后仰：那样小臂完全垂直地面，<b>就完全没有抗阻了</b>。微微前倾才能在顶峰收缩时保持张力。",
+      "轨迹：<b>先屈大臂 + 外旋</b>，再把整个大臂向前推，然后小臂<b>画一个半圆</b>收紧二头。不是单纯屈肘。",
+      "站姿做时<b>重心移到同侧腿</b>（做左边重心在左腿上），从“小臂和大臂在镜子里重叠”的状态往下放。双手不要重叠，做完一边再做另一边。",
+      "离心关键：<b>别先撤肘</b> —— 先撤肘等于缩短行程、降低离心强度。要<b>顶着肘往前够</b>，先让小臂放到接近伸直，大臂再往后走。",
+      "呼吸：<b>向心（起）呼气，离心（放）吸气</b>。",
+      "<b>节奏就是强度的一部分</b> —— 哪怕特别酸也不要中途歇、不要改变节奏。",
+      "手腕不适可以带护腕；一定要握好，别放空。"
+    ],
+    "pic": "https://i0.hdslb.com/bfs/archive/e3536b45bbe01564de07a9c27f3dfb9a9de294c8.jpg",
+    "owner": "凯圣王"
+  },
+  "杠铃深蹲": {
+    "bv": "BV1iQ4y1e7YL",
+    "title": "保姆级深蹲姿势详解（新手易犯错误）",
+    "points": [
+      "<b>后脚跟绝不能离地</b> —— 你自己试：后脚跟一离地，臀大肌瞬间全松掉，膝盖压力剧增。",
+      "<b>膝盖朝向 = 大脚趾与二脚趾中间的方向</b>。膝盖内扣会让膝关节产生剪切力，长期必伤。",
+      "<b>肘关节往里夹紧、朝向地面</b> —— 这样肩胛才能收紧、上背才有刚性。肘往后“飞”会让上斜方收紧、肩胛被拉起来，整个上背垮掉，大重量会把你压到前面去，腰受伤。",
+      "到顶时<b>不要把膝关节往后磕</b>。膝关节是滑车关节、角度只有 180 度，往后磕就是<b>超伸</b>。（像车开到墙前自己停下，不是撞上去才停。）",
+      "<b>髋膝要联动</b>：先伸膝再伸髋，就把深蹲做成了“早安式”，腰承受更大重量。",
+      "<b>重心在足中</b>。下放时重心往前压 → 跑到前脚掌，腰和膝明显受力，臀大肌用不上、股四头压力过大（女生这么蹲腿会变粗）。",
+      "<b>足背屈角度要够</b>。角度不够，身体只能靠屈髋趴下去才能蹲到底，力臂变长、阻力集中在腰上，容易变成早安式、大幅提高腰椎受伤风险。",
+      "<b>骨盆眨眼 = 下背部垮掉</b>，腰椎受伤风险大增。多见于髋关节活动度不足、足背屈受限、大腿后侧紧张 —— 先去筛查自己是哪种。",
+      "<b>不要靠反弹起身</b>（牵张反射发力）。身体做任何动作都要控制，不能像皮球一样弹。",
+      "一句话：<b>好的动作让你获得收益，不好的动作只会增加受伤风险</b>。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/4772ab85239c6a38c0b2d82557af81220ccbaadd.jpg",
+    "owner": "凯圣王"
+  },
+  "腿举": {
+    "bv": "BV1mT4y1b7Z5",
+    "title": "倒蹬详解",
+    "points": [
+      "最危险的一件事：<b>膝盖超伸</b>。腿要在<b>伸直但不锁死</b>的状态，力量停在腿上，不是撞击膝盖（像车开到墙前停下，不是撞墙才停）。",
+      "幅度受<b>髋关节活动度</b>限制：<b>下到你骨盆不发生后倾（不眨眼）的角度就是上限</b>。靠骨盆后倾、腰代偿换来的更深角度，腰压力非常大。",
+      "<b>后脚跟不能离开踏板</b>，离开的话膝盖压力很大。",
+      "脚位高：<b>腘绳肌张力变大、股四头肌张力变小</b>（深蹲幅度衰减）；脚位低：<b>股四头肌参与更多</b>。",
+      "站得宽：<b>内收肌群参与更多</b>；站得窄：<b>股四头肌更多</b>。可以按自己的弱点安排。",
+      "节奏：<b>下 1-2 秒，上 1 秒</b>；上到顶要让腿完全收紧（但膝盖不锁死）。",
+      "手<b>拉到下面的把手</b>固定臀部（别去抓上面，那会改变肋骨状态）；大腿在踏板上要有<b>外旋的扭矩</b>，能有效防止膝内扣。",
+      "控制好<b>腹内压</b>。下放时腰一带长，比深蹲更容易受伤。",
+      "做 8-12 次别中途停顿，把<b>代谢压力拉满</b>；也可以 6-8 次上重量。但它是<b>辅助器械</b>，别当主项来练。",
+      "<b>倒蹬不能代替自由深蹲</b>。自由深蹲对上背刚性、核心刚性、髋膝稳定性、肌腱韧带、足背屈的要求都很高，开发更全面。用器械跳过这些开发，肌肉长了但身体的短板会变大。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/2eab7fc6e5f26f4a841151d78305532c47808dd5.jpg",
+    "owner": "凯圣王"
+  },
+  "平板支撑": {
+    "bv": "BV14w411V7Yj",
+    "title": "平板支撑详解",
+    "points": [
+      "它是<b>等长动作</b>，练的是<b>核心刚性</b>和承重能力，不是拿来“减掉肚子上的脂肪”的。想让腹肌更清晰要做挤压感更强的训练。",
+      "<b>手肘跟肩在一条直线上</b>（垂直在肩正下方），不要靠前或靠后，避免二三头过度使劲。",
+      "<b>肩胛不要玩命内收</b>，要<b>打开、外展</b>，把前锯肌顶出去，让肩胛贴着胸廓。",
+      "髋关节<b>不要过分前倾，适当后倾</b>。比喻：髋是个水盆，水从前边洒出来叫前倾、从后边洒出来叫后倾。前倾在这儿会积压一部分力量、把腰推出去，很危险。",
+      "腿<b>不要完全打直</b>，适当微屈。",
+      "<b>重心在身体中间</b>。如果你觉得手撑着很累、脚老往后滑，说明重心放太靠下了。",
+      "两个关键技巧：① <b>用肘跟地面较劲</b>（像用手去顶别人的手）→ 前锯肌激活；② <b>用腹把脚向回拉</b> → 整条前侧链激活。这样会更累，但能撑更久、更有效。",
+      "呼吸：<b>腹式呼吸，每次呼气都把腹横肌往里收</b> —— 想象腹部往脊柱靠拢，像一堵墙被越推越靠后。",
+      "腹横肌是身体的“天然束腰”。激活它可以在不减脂的情况下让腰围直接小 2-3 厘米（商业健身房当年就靠这招卖课）。",
+      "它不是“愣撑着就行”，细节做到位难度会明显上升。"
+    ],
+    "pic": "https://i0.hdslb.com/bfs/archive/0da2378d19743b5b62752c47131a880c65ad401b.jpg",
+    "owner": "凯圣王"
+  },
+  "悬垂举腿": {
+    "bv": "BV1nJ4m1e7bj",
+    "title": "悬垂举腿详解",
+    "points": [
+      "远固定动作，对肩、肩袖、前锯肌有额外收益 —— 这类动作一定要出现在你的计划里。",
+      "<b>骨盆绝对不能前倾，要后倾</b>。名字叫「举腿」，本质是「卷腹」。骨盆前倾 + 荡起来 + 直腿，腰会非常难受。",
+      "<b>脚始终放在髋的前面</b>，不能落到髋的后边 —— 落到后面骨盆很容易前倾，你就开始借腰了。下落到最低点也要停在髋前面。",
+      "没劲就<b>屈膝做</b>（腿越伸直越难）。想象<b>用膝盖去找胸</b>，上身也配合着往下卷。",
+      "<b>小腿完全放松</b>。如果你的小腿能往前摆，说明股四头在使劲，那就错了。",
+      "<b>手臂不是光挂着</b>：大臂要做一个向下压/向前的动作，激活前锯肌和背部，让整个躯干变稳，同时也多练到一块。",
+      "呼吸：<b>向上卷呼气、下放吸气</b>。呼吸一乱动作就开始变形，也会更难受。",
+      "固定好颈椎，<b>头不要乱动</b>。",
+      "垂不住就换成<b>悬撑举腿</b>（双杠上）：小腿往里卷、骨盆后倾，手给一个向下撑的力，同样能激活前锯肌。",
+      "不用单独拿一天练腹 —— <b>练完腿或练完背加 2-3 组</b>就够了。",
+      "腹肌训练和其他肌肉一样：<b>需要离心控制、需要顶峰收缩，不以次数取胜</b>，要追求训练质量。",
+      "屈腿做起来没强度了就改<b>直腿</b>，再进一步可以在<b>脚踝负重</b>。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/3909fbf049a0a36b1b2936d125d93a80ec73f7cb.jpg",
+    "owner": "凯圣王"
+  },
+  "上斜杠铃卧推": {
+    "bv": "BV1u1421D7jk",
+    "title": "上斜杠铃卧推详解",
+    "points": [
+      "杠铃 vs 哑铃：哑铃行程更全面；<b>杠铃稳定性更高、更适合上大强度</b>。想用大强度刺激上胸，杠铃更合适。",
+      "<b>凳角 35-45 度</b>。调太高 → 三角肌前束吃力；只调一格 → 跟平板没区别。",
+      "<b>屁股不能离开凳子</b>。新手推荐<b>后脚跟踩死地面、脚尖向外斜 45 度</b>，把身体往回蹬去固定髋和胸腔，下放时更稳。",
+      "高阶技巧（整个胸椎贴凳）能让上胸更孤立，但吃肩活动度和肩胛功能。<b>普通人让胸椎稍微有点活动度、后侧微空</b>，保证离心时肩胛不被翘起来 —— 否则肩袖压力大，容易伤到二头长头肌腱和冈上肌腱。",
+      "握距：<b>别太窄</b>（太窄三头被拉长、伸肘抗阻距离增加）。<b>小拇指握环</b>，或往外握两个手指；小臂略垂直地面。",
+      "<b>刚开始练上斜可以不触胸，留约 10 厘米</b>（触胸很吃肩胛功能和肩袖稳定性）。但严格说杠铃卧推是要触胸的。",
+      "到顶<b>肘不要完全锁死</b>：停在胸上把胸收紧，而不是把肘顶直。",
+      "肘的角度：<b>可以比平板打开一点，但不要超过肩</b>（超过容易弹响、撞击、卡压）。夹太紧会让肩压力大、三头更费力。",
+      "肩胛：有意识地做<b>下回旋 + 内收</b>；往下放时肩胛要收进去、把胸挺起来。",
+      "离心想象<b>胸大肌是一根被拉长的皮筋</b>（水平外展）；向心有四个方向：<b>胸往前够 + 下巴往后收 + 两个肘向内收 + 手臂往里走</b>。",
+      "呼吸：气吸在胸腔；5 次组可以用瓦式呼吸；离心吸气、向心呼气。<b>别在高次数组全用瓦式</b>（颅内压太高），也绝不能反过来（下呼上吸会没力量）。",
+      "它更吃<b>肌肉量</b>（肌肉量越大张力越好、稳定性越高），<b>别盲目上大重量</b>；适合 <b>8 次以上</b>，不适合 2-3 次组。一旦出现疼痛，去筛查肩袖、前锯肌、肩胛。",
+      "握法同平板：穿过大鱼际小鱼际，<b>不要塌腕</b>；<b>不要仰头</b>（颈椎容易受伤）。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/f09fcc6bb045d308ba7bcacd507d0abb0937df36.jpg",
+    "owner": "凯圣王"
+  },
+  "哑铃侧平举": {
+    "bv": "BV1UN41157u9",
+    "title": "哑铃侧平举详解",
+    "points": [
+      "推举和侧平举<b>不是二选一</b>：推举应用范围广（投掷、球类、搏击都用得到），<b>侧平举主要服务肌肥大</b>。两个都要掌握。",
+      "握法：<b>居中</b>，手包裹住哑铃，<b>不要仰腕也不要过分塌腕</b>，中立位靠下一点点（像出拳往下扣一点的角度）。",
+      "<b>不用玩命攥紧</b> —— 那会激活手臂筋膜链让手臂僵硬。只需固定住、有包裹感，<b>小臂保持放松</b>。练熟了甚至可以握得更松，肩的感觉更好。",
+      "手腕<b>不要跟着往上移</b>，那样小臂会酸而肩没感觉。",
+      "<b>大臂不要完全伸直</b>（超伸会让力臂更长、斜方发力更多，本身也危险），<b>适当微屈</b>就行。",
+      "<b>不要追求重量</b>。侧平举力臂很长，很考验肩，一上重量就耸肩、甚至肩峰撞击。用大重量甩上去 = 没有张力，等于在练腰和协调性。",
+      "角度没有固定标准：<b>做 20 次组可以接近伸直，做 12 次组屈度就要大一点</b>。重量越沉，手臂角度要越接近 90 度。",
+      "位置：<b>身体微微前倾、手放在身体前侧</b>，此时肩是完全放松的，从这里启动去募击三角肌。",
+      "为什么不推荐从体侧启动：那一段会用到冈上肌，而且斜方肌被激活 —— 三角肌还没建立张力时，你只会肩酸、斜方更酸。高手随意。",
+      "<b>微微锁死膝盖、控制住髋关节</b>，别连着做 —— 膝髋一联动就成了借力，肩会酸但没控制。",
+      "<b>底部停 0.5-1 秒</b>，让手臂和肩完全放松后<b>重新募击三角肌</b>再起。",
+      "到顶时小臂、大臂内侧<b>朝下</b>（有个角度变化），不是手掌一直相对。",
+      "<b>不要过分内旋</b>（会造成肩峰撞击）。有肱骨前移、圆肩驼背的人反过来做：<b>手掌朝前、甚至哑铃朝斜后方</b>，用来避开撞击，而不是顶着疼痛做。",
+      "行程 <b>约 90 度</b>比较大众化；全程和极小幅度都要求很强的控制力和目击感，新手不推荐。",
+      "离心价值更大（力臂长）：<b>怎么上去的就怎么控制下来</b>。",
+      "心法：<b>别想着「往上走」，要去「够两侧的墙」</b>，给一个延伸感，不然容易激活斜方。",
+      "辅助手法：手搭在<b>肘关节靠下的位置</b>，给<b>向上 + 向外</b>的力，能帮冈上肌和斜方省力。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/c63c9169b177d68198e175d1b599c6890c26e281.jpg",
+    "owner": "凯圣王"
+  },
+  "双杠臂屈伸": {
+    "bv": "BV1Nu4m1A7yJ",
+    "title": "双杠臂屈伸详解",
+    "points": [
+      "<b>两种做法，练的东西不一样</b>：<b>①举重式</b>——躯干直立、大臂贴紧身体、腿在躯干后侧成一条线 → 主要练伸肘（三头）+ 三角肌前束；<b>②健美式</b>——膝在髋前、胸椎略弯、肘打开一个角度、顶部收缩 → 主要练下胸。",
+      "①的问题：大臂夹紧后<b>没有水平内收的空间</b>，胸参与减少、全靠伸肘，肩的压力高。所以<b>不太适合新手</b>；有肱骨前移或圆肩驼背的人下放时容易撞击卡压。",
+      "②的做法：<b>想象成下斜卧推（约 35 度）</b>，主要张力放在胸上，上去时<b>把胸收紧</b>（像龙门夹胸的感觉，但强度大很多）。",
+      "前提：<b>肩关节不能有疼痛，追求无痛训练</b>。有一点疼都别做。",
+      "握法同卧推：<b>别塌腕</b>（不要用手腕中间去撑杆），用<b>大鱼际小鱼际</b>撑住；稍微用力抓住，激活手臂筋膜链。",
+      "<b>不能在耸肩状态下开始</b>：先控制肩胛、让前锯肌发上力，肩胛稳住再开始动作。",
+      "肌肉量够就去找<b>胸大肌被拉长</b>的感觉；肌肉量低就靠<b>肩胛内收</b>来控制稳定性。",
+      "安排位置：<b>别放在最后</b>（那时候做不动、上不了强度）。建议放<b>第一个或第二个</b>，或者紧跟在主项之后。",
+      "能标准做 <b>8 次以上</b>，就说明可以开始上重量/负重了。",
+      "它是<b>远固定的复合动作</b>，对肩胛和前锯肌的开发很有好处。训练计划里<b>一定要有复合动作和远固定动作</b> —— 全是孤立动作会丧失肌间协调性，反过来拖累卧推等动作的绝对重量。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/d41508b801544a10c318c6b5c26f08283a4a67a9.jpg",
+    "owner": "凯圣王"
+  },
+  "杠铃划船": {
+    "bv": "BV1YG411S7o9",
+    "title": "杠铃划船详解",
+    "points": [
+      "这个动作<b>对新手不太友好</b>，最常见的抱怨是「背还没感觉，腰先酸了」。",
+      "<b>第一个坑是重心</b>：太靠前（杠铃离身体太远）→ 往上滑 + 腰借力，腰很快就酸；太靠后（杠铃贴到腿上）→ 没有向上空间，变成练斜方。",
+      "<b>怎么找重心</b>：先摆成小学体育课「跑累了扶着膝盖喘气」的姿势 → 在这个基础上把背挺直、肩胛摆正、双脚与肩同宽、脚尖微微朝外、手放松。此时<b>手跟膝盖约一拳半到两拳的距离</b>就对了。",
+      "<b>杠铃要靠近髋关节</b>，不能离太远 —— 离远了力臂变长、腰的压力变大。靠近髋关节还能<b>提前激活背阔肌</b>（背阔的功能之一就是让大臂向后伸）。",
+      "这个动作的<b>发动机是肩胛</b>（肩胛有六个功能：上提、下降、上回旋、下回旋、内收、外展）。",
+      "<b>典型错误</b>：忽略肩胛，拿腰蹬、拿手拉 → 肘无限向后走并向上转 → 肩胛被往上拉 → 结果手臂酸、三角肌后束酸，<b>背阔完全没感觉</b>。",
+      "<b>正确做法</b>：用<b>肩胛内收</b>带动动作，<b>肘关节夹紧去找屁股的位置</b>，把背阔收紧。收紧了背阔，手其实只能到那儿 —— <b>如果你还能继续往后拉，说明背是放松的</b>。",
+      "肩胛不只是内收，还要<b>向下压（下降）</b>，两个功能都要充分做出来，最后再沉肩。",
+      "大臂要<b>持续向后伸</b>去对抗杠铃，这个持续的抗阻才能把背阔收紧。",
+      "<b>关键细节</b>：肘向后移动的同时，<b>肩也要跟着向后移动</b>。只让肘动、肩不动，肩就会往前旋，背被拉长，不容易有感觉。",
+      "<b>骨盆一定要中立位</b>。下背收不紧或骨盆后倾，腰就会受力，上大重量很危险。",
+      "<b>节奏和练胸完全相反（这条最重要）</b>：练胸的顶峰收缩出现在「肘快伸直」时，那是省力杠杆，所以底部启动慢没关系；<b>练背的顶峰收缩出现在「最费劲」的时候，阻力矩最大</b>。所以底部<b>不能太慢</b> —— 太慢到上面就收不紧了。要<b>匀速、稍微加一点速度</b>，才能做出好的顶部收缩。",
+      "握不住可以<b>带拉力带</b>；<b>穿平底鞋</b>，别穿跑鞋。",
+      "<b>不要盲目冲大重量</b>，来回甩对你前期意义不大。想要重量就去用器械或滑轮组。划船要用<b>你核心能掌握住的重量</b>。"
+    ],
+    "pic": "https://i1.hdslb.com/bfs/archive/94abebae0a07938dbe15cefea90ffc48a52c06cf.jpg",
+    "owner": "凯圣王"
+  },
+  "单臂哑铃划船": {
+    "bv": "BV1ij411H773",
+    "title": "哑铃划船详解",
+    "points": [
+      "相比杠铃划船：哑铃<b>活动范围更大</b>，健身房更好找到，而且<b>受力感对很多人来说更容易建立</b>。抢不到杠铃就用它。",
+      "站位同杠铃：<b>重心在脚中间</b>，正常屈髋（就是打篮球累了扶着膝盖休息的姿势），然后<b>把背挺直</b>、手放松。此时<b>手跟膝盖约一拳到两拳的距离</b>。",
+      "哑铃<b>不能往前放</b> —— 往前够会让哑铃离髋关节太远、产生力臂，腰压力增加。要让<b>小臂重心适当往后</b>，哑铃落在<b>肩的里侧</b>（不是垂直到肩的正下方）。",
+      "<b>提前收紧背阔、把大臂向后</b>：这样腰的压力会减小，同时提前激活背阔。<b>这是解决「划船背阔没感觉、只有大圆肌发达」的关键技巧</b>，一定要试。",
+      "向上滑：<b>肩胛内收带动</b>，大臂向上（肘向上），而且<b>肩和肘要同时向后移动</b>。",
+      "<b>三个最常见的错误</b>：① 后背没有变化，只是把手往上提；② 以肩关节为支点，大臂无限后伸/前转，背变成一个平面，靠手蹬上来；③ 肘关节向外打开。",
+      "背的两个功能：<b>大臂内收 + 大臂后伸</b>。内收肩胛是为了激活中下斜方肌和菱形肌。",
+      "向上过程中<b>可以适当抬头</b>；如果腰没有不适，可以加一点<b>挺胸</b>，背会收得更紧。",
+      "<b>小臂要找「被打断」的感觉（完全放松）</b>：小臂不垂直地面 → 二头被激活（变屈肘动作）；小臂过分向后 → 三头被激活。",
+      "<b>最重要的细节</b>：大臂向后伸的力量<b>要靠背去保持，不能靠三头</b>。手臂完全放松，用背把位置撑住 —— 靠三头撑会越练越别扭。",
+      "<b>向心节奏和卧推正好相反（反复强调）</b>：卧推的顶峰收缩在省力杠杆上；<b>背的顶峰收缩在最大阻力矩上，所以底部不能慢</b> —— 底部控制太慢，到上面就收不紧了。<b>要有一点速度，但不是爆发力</b>。",
+      "心法：把一个动作想成 10 格（上 1-5、下 6-10），<b>每一下都重要</b>，像拉琴一样全程保持张力。",
+      "离心：<b>把肩胛完全推开</b>，靠背阔控制着放下去。<b>力量要停在背上，不能停在腰上</b>。肩胛全打开的幅度就是离心的最大幅度。",
+      "起来时<b>手掌相对</b>、<b>小臂垂直</b>（别往前），背的发力会更多。",
+      "<b>拿放比训练更容易受伤</b>：哪怕哑铃再轻也不要弯腰直接拿 —— 蹲下去拿，或者保持腰部刚性再拿。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/35479f32fc6c50fe979be8a7f3da191050ca1512.jpg",
+    "owner": "凯圣王"
+  },
+  "绳索下压": {
+    "bv": "BV1NF4m1E7nv",
+    "title": "龙门臂屈伸详解（直臂下压）",
+    "points": [
+      "又叫<b>直臂下压</b>。优点是<b>肘关节压力非常小</b>，而且滑轮组能提供<b>持续张力</b>，泵感很好找。",
+      "握法：<b>别握手掌中间</b> —— 那样下压时手腕跟着动、一直仰腕，会造成腕关节不适。要用<b>大鱼际小鱼际、手掌根部压住杆</b>，手指扣过来（可以不全握，但一定要压住）。",
+      "手要像钳子一样<b>捏死，不能放空</b> —— 滑轮组一松手打到脸上会受伤。整个过程中手腕其实不怎么受力。",
+      "它是滑轮组 + 单关节动作，<b>借力范围要尽量小</b>：腰、髋、膝的参与压到最低。别拿腰甚至体重往下压去炫大重量，那没意义。",
+      "<b>两种角度，新手选前者</b>：① <b>大臂略微前移、位置低一点</b>（大小臂夹角较大）→ 移动距离稍短，但<b>肘压力小</b>；② 大臂贴身、夹角接近锐角 → 行程更长，但<b>肘压力非常大</b>，只有有肌肉量、能找到张力、且肘不难受时才用。",
+      "做法：<b>大臂夹紧身体、肩不要往前移动</b>；往下时<b>固定住肘关节</b>，让手<b>画一个半圆</b>去跟大臂平行。",
+      "<b>别想「往下压」</b> —— 一想往下压，行程就会变短，肘也会往前顶。",
+      "顶点：<b>画半圆往后走</b>，到小臂和大臂在一条线上；<b>肩不能被翘起来</b>（很多人收紧时肩跟着起来了，那就不对了）。",
+      "<b>顶部收缩很重要</b>，最后要真的收紧，甚至可以微微再往下压一下。",
+      "离心要<b>控制</b>（很多人离心完全不管，效率很低）；放到<b>小臂与地面平行的位置就够了</b>，再往上肩就开始动、三头也会失去张力。",
+      "呼吸：<b>离心用鼻子吸气，向心呼气</b>。",
+      "次数 <b>8 次以上</b>（8-12，甚至 15-16 也可以）。可以放在<b>仰卧臂屈伸或窄推之前</b>，给肘关节预热。"
+    ],
+    "pic": "https://i2.hdslb.com/bfs/archive/e9a9837c9d9b8af90a5528306ee5cecdb54605fa.jpg",
+    "owner": "凯圣王"
+  },
+  "罗马尼亚硬拉": {
+    "bv": "BV1xw3B61EUg",
+    "title": "【口袋教练系列5】罗马尼亚硬拉",
+    "points": [
+      "这个动作主要练<b>臀大肌的伸髋功能</b>。",
+      "站距：<b>不要太窄也不要过宽</b>，肩的中立位就行；脚尖朝前、微微外旋一点。",
+      "如果臀的发力感不好、膝盖会内扣、或脚外侧会翻起来：<b>在膝盖上套一条弹力带</b>，做主动外展。",
+      "会磨到手可以<b>带拉带</b>。",
+      "<b>次数从 15-20 次起步</b>。肌肉募集是由小到大的，上来拿太沉，你更找不到臀的发力 —— 这是它和深蹲、传统硬拉最大的不同。",
+      "握法：<b>两个手放在两个肩的外侧一点点</b>；<b>杠铃一定要贴着你的腿（小腿）</b>。",
+      "为什么必须贴着腿：贴住时杠铃对下腰段的力臂短、<b>腰椎剪切力小</b>；一旦杠铃前移离开小腿，力臂变长，下腰段剪切力变大，很容易出问题。",
+      "抗阻的力量<b>来自背阔肌，不是胳膊</b>：<b>肩胛下降且后倾</b>，让背阔跟杠铃对抗，上背才有刚性。<b>不能故意挺胸</b> —— 挺胸会让肩胛过度内收、腰容易变成骨盆前倾，压力反而变大。",
+      "行程：<b>刚开始杠铃放到膝盖上方</b>就行，先找感觉；熟练了可以放到<b>膝盖下方一拳</b>，只要不改变重心和核心刚性。",
+      "顶峰收缩时<b>加一定的骨盆后倾进去</b>，但<b>不是让髋关节水平向前顶（骨盆前移）</b>。骨盆前移时腰椎过度伸展，<b>腰椎后方关节突压力很大</b>；骨盆后倾则髋在中立位、核心和腰都没压力。",
+      "上顶可以收紧臀部，但<b>不要让髋关节产生「横移」</b>。想象髋上有一个轴在转动：屈髋 → 轴转动 → 伸髋。",
+      "<b>重心在脚的正中间（足中）</b>。放前脚掌 → 人会出去、腰发力多；放后脚跟 → 屈膝角度变大、股四头参与变多。",
+      "<b>向心时膝盖不要往前引</b> —— 一引就变成举重动作了，负重转移到股四头，臀的张力立刻变小。全程让臀处于「被拉长→缩短」的循环里。",
+      "<b>节奏不用太慢</b>（越慢越难找感觉，稳定肌群会抢着参与），<b>匀速</b>但要控制。",
+      "很多人久坐、<b>腘绳肌太紧或屈髋受限</b>，往下放太多就只能靠腰代偿 —— <b>建议侧面拍视频自己看</b>。",
+      "<b>所有俯身动作都要构建腹内压</b>：把气吸到腹腔、膈肌下降、关闭下气门，像一个「充满气、压得很紧的瓶子」。腹部是<b>收紧缩短的状态，不是往里吸</b>。"
+    ],
+    "pic": "https://i0.hdslb.com/bfs/archive/d44cf0e49b7d5e7f589e85c9fc622260be66c3ca.jpg",
+    "owner": "凯圣王"
+  }
+};
 
 // ========== KEYBOARD ==========
 document.addEventListener('keydown', (e) => {

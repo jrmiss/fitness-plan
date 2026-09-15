@@ -1063,7 +1063,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 10,
+  version: 11,
   profile: {
     status: "恢复期",
     statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
@@ -1105,13 +1105,13 @@ const DEFAULT_DATA = {
       id: "day3",
       name: "Day 3",
       title: "腿：深蹲+后链",
-      goal: "动作质量第一。深蹲你只练过几次，今天宁轻勿重，把动作框架练稳。★加了保加利亚蹲（单腿）——你原来的腿日全是双腿动作，缺单腿稳定。预计 65 分钟(含热身)，觉得太长就把腿举砍掉。",
+      goal: "动作质量第一。深蹲你只练过几次，今天宁轻勿重，把动作框架练稳。腿日约 55-60 分钟（腿部 15 组 + 核心 2 组）。★时间不够或状态不好，按这个顺序砍：核心 → 提踵 → 腿弯举 → 保加利亚蹲。深蹲和 RDL 是底线，别砍。",
       exercises: [
-        { id: "ex10", name: "杠铃深蹲", sets: 4, reps: "8", weight: 50, rest: "2.5分钟", tag: "主项", note: "动作质量 > 重量。膝盖跟脚尖同方向，蹲到大腿接近平行，起身先站直髋。动作一变就减重。" },
+        { id: "ex10", name: "杠铃深蹲", sets: 4, reps: "8", weight: 50, rest: "2.5分钟", tag: "主项", note: "动作质量 > 重量。膝盖跟脚尖同方向，蹲到大腿接近平行，起身先站直髋。动作一变就减重。★这是腿日最该保住的动作。" },
         { id: "ex11", name: "罗马尼亚硬拉", sets: 3, reps: "10", weight: 40, rest: "2分钟", tag: "次项", note: "你也只练过几次 —— 髋部向后推，背部全程中立，感受大腿后侧拉伸。轻一点没关系。" },
-        { id: "ex24", name: "保加利亚分腿蹲", sets: 3, reps: "10", weight: 0, rest: "90秒", tag: "次项", note: "★新加。后脚背放在凳子上，躯干微前倾，前腿蹲到接近平行。单腿动作能开发髋关节、让臀中臀小肌参与更多（谭成义腿日核心动作）。先空手找平衡，稳了再拿哑铃。每条腿 10 次。" },
-        { id: "ex12", name: "腿举", sets: 2, reps: "12", weight: 0, rest: "90秒", tag: "", note: "脚距与肩同宽，不要锁死膝盖。" },
-        { id: "ex13", name: "坐姿腿弯举", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立。顶峰收缩停 1 秒。" },
+        { id: "ex24", name: "保加利亚分腿蹲", sets: 2, reps: "10", weight: 0, rest: "90秒", tag: "次项", note: "★新动作，先从 2 组起步，稳了再加到 3 组。后脚背放在凳子上，躯干微前倾，前腿蹲到接近平行。先空手找平衡，别急着负重。" },
+        { id: "ex12", name: "腿举", sets: 2, reps: "12", weight: 0, rest: "90秒", tag: "", note: "相对轻松的器械动作，放在后面收尾。脚距与肩同宽，不要锁死膝盖。" },
+        { id: "ex13", name: "坐姿腿弯举", sets: 2, reps: "15", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立。顶峰收缩停 1 秒。" },
         { id: "ex14", name: "站姿提踵", sets: 2, reps: "15", weight: 0, rest: "60秒", tag: "", note: "小腿。底部充分下沉，顶部停 1 秒。" },
         { id: "ex15", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "45秒", tag: "", note: "平板支撑 45-60 秒 + 悬垂举腿 10-15 次。" }
       ]
@@ -1247,6 +1247,23 @@ function loadData() {
     appData = newData;
     saveData();
     showToast('计划已更新：加入保加利亚蹲 + 肩胛后缩划船（训练记录已保留）');
+  }
+  // v11 迁移：腿日减量（保加利亚蹲 3->2 组、腿弯举 3->2 组，共 19->15 组）
+  // 外科手术式修改：只动这两处，其余计划内容和你自己改过的重量全部保留
+  if (!appData.version || appData.version < 11) {
+    (appData.days || []).forEach(d => {
+      (d.exercises || []).forEach(ex => {
+        if (ex.name && ex.name.indexOf('保加利亚') !== -1 && ex.sets > 2) ex.sets = 2;
+        if (ex.name && ex.name.indexOf('坐姿腿弯举') !== -1 && ex.sets > 2) ex.sets = 2;
+      });
+      if (d.id === 'day3') {
+        const def = (DEFAULT_DATA.days || []).find(x => x.id === 'day3');
+        if (def) d.goal = def.goal;
+      }
+    });
+    appData.version = 11;
+    saveData();
+    showToast('腿日已减量：保加利亚蹲、腿弯举各减 1 组（共 15 组）');
   }
   // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
   // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间

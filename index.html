@@ -1063,7 +1063,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 9,
+  version: 10,
   profile: {
     status: "恢复期",
     statusSub: "停训1个月需适应 · 上半身偏瘦、大腿脂肪偏多",
@@ -1105,11 +1105,12 @@ const DEFAULT_DATA = {
       id: "day3",
       name: "Day 3",
       title: "腿：深蹲+后链",
-      goal: "动作质量第一。深蹲你只练过几次，今天宁轻勿重，把动作框架练稳。预计 60 分钟(含热身)。",
+      goal: "动作质量第一。深蹲你只练过几次，今天宁轻勿重，把动作框架练稳。★加了保加利亚蹲（单腿）——你原来的腿日全是双腿动作，缺单腿稳定。预计 65 分钟(含热身)，觉得太长就把腿举砍掉。",
       exercises: [
         { id: "ex10", name: "杠铃深蹲", sets: 4, reps: "8", weight: 50, rest: "2.5分钟", tag: "主项", note: "动作质量 > 重量。膝盖跟脚尖同方向，蹲到大腿接近平行，起身先站直髋。动作一变就减重。" },
         { id: "ex11", name: "罗马尼亚硬拉", sets: 3, reps: "10", weight: 40, rest: "2分钟", tag: "次项", note: "你也只练过几次 —— 髋部向后推，背部全程中立，感受大腿后侧拉伸。轻一点没关系。" },
-        { id: "ex12", name: "腿举", sets: 3, reps: "12", weight: 0, rest: "90秒", tag: "", note: "脚距与肩同宽，不要锁死膝盖。" },
+        { id: "ex24", name: "保加利亚分腿蹲", sets: 3, reps: "10", weight: 0, rest: "90秒", tag: "次项", note: "★新加。后脚背放在凳子上，躯干微前倾，前腿蹲到接近平行。单腿动作能开发髋关节、让臀中臀小肌参与更多（谭成义腿日核心动作）。先空手找平衡，稳了再拿哑铃。每条腿 10 次。" },
+        { id: "ex12", name: "腿举", sets: 2, reps: "12", weight: 0, rest: "90秒", tag: "", note: "脚距与肩同宽，不要锁死膝盖。" },
         { id: "ex13", name: "坐姿腿弯举", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "腘绳肌孤立。顶峰收缩停 1 秒。" },
         { id: "ex14", name: "站姿提踵", sets: 2, reps: "15", weight: 0, rest: "60秒", tag: "", note: "小腿。底部充分下沉，顶部停 1 秒。" },
         { id: "ex15", name: "核心组合(平板支撑+悬垂举腿)", sets: 2, reps: "各3组", weight: 0, rest: "45秒", tag: "", note: "平板支撑 45-60 秒 + 悬垂举腿 10-15 次。" }
@@ -1131,10 +1132,11 @@ const DEFAULT_DATA = {
       id: "day5",
       name: "Day 5",
       title: "拉B：背·厚度",
-      goal: "第二次拉，主打背部厚度（划船类）。预计 50 分钟(含热身)。",
+      goal: "第二次拉，主打背部厚度（划船类）。★加了坐姿开肘划船专门练肩胛后缩——针对你的肩部问题。预计 55 分钟(含热身)。",
       exercises: [
         { id: "ex20", name: "杠铃划船", sets: 3, reps: "8", weight: 20, rest: "2分钟", tag: "主项", note: "★你没做过 —— 从空杆 20kg 起，先专门解决「腰酸」这个信号。屈髋（屁股向后）不是弯腰，躯干 45 度，背成直线，先夹肩胛再拉向下腹，下放数 3 秒。腰不酸了再加重。握不住就带拉力带。详见 动作学习_杠铃划船.md" },
         { id: "ex21", name: "单臂哑铃划船", sets: 3, reps: "10", weight: 17.5, rest: "90秒", tag: "主项", note: "每侧独立。肩胛骨后收，别用身体旋转借力。" },
+        { id: "ex25", name: "坐姿开肘划船(肩胛后缩)", sets: 3, reps: "15", weight: 0, rest: "90秒", tag: "", note: "★新加，专门针对你的肩。肘往外打开，用中下斜方肌带动，感受肩胛骨往中间夹、拉向腹部——不是用手臂拽。谭成义原话：『很多人推得多拉得少，胸椎屈曲、前侧紧张，肩关节会产生不适。开发好肩胛骨的后缩能力，肩痛问题会改善特别多。』健身房有海豹划船就优先换海豹划船，更不容易借力。" },
         { id: "ex23", name: "哑铃弯举", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "二头顺带，大臂固定别晃。" }
       ]
     },
@@ -1222,6 +1224,29 @@ function loadData() {
     appData = newData;
     saveData();
     showToast('已升级到体型定制版计划');
+  }
+  // v10 迁移：加保加利亚蹲 + 坐姿开肘划船(肩胛后缩)，并修引体向上的辅助方案与力竭标准
+  // 关键：保留训练记录 history 和循环进度 cycleState
+  if (!appData.version || appData.version < 10) {
+    const oldProfile = appData.profile || {};
+    const oldHistory = appData.history || [];
+    const oldCycle = appData.cycleState || {};
+    const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    ['status','statusSub','height','weight'].forEach(k => {
+      if (oldProfile[k] !== undefined && oldProfile[k] !== '') newData.profile[k] = oldProfile[k];
+    });
+    newData.history = oldHistory;                 // 保留训练记录
+    newData.cycleState = {
+      lastDayIndex: (oldCycle.lastDayIndex === undefined ? -1 : oldCycle.lastDayIndex),
+      lastDate: oldCycle.lastDate || "",
+      round: oldCycle.round || 1,
+      cyclesDone: oldCycle.cyclesDone || 0,
+      restTaken: oldCycle.restTaken || false
+    };                                            // 保留循环进度（训练日顺序没变，可以安全沿用）
+    newData.version = 10;
+    appData = newData;
+    saveData();
+    showToast('计划已更新：加入保加利亚蹲 + 肩胛后缩划船（训练记录已保留）');
   }
   // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
   // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间
@@ -2139,15 +2164,22 @@ function importData(event) {
 }
 
 function resetData() {
-  if (!confirm('确定重置为默认计划吗？所有修改将丢失！')) return;
+  if (!confirm('确定重置为默认计划吗？\n\n计划会恢复默认；你的训练记录（history）和身高体重会保留。')) return;
+  const keepHistory = appData.history || [];
+  const oldProfile = appData.profile || {};
   appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  appData.history = keepHistory;          // 保留训练记录
+  ['status', 'statusSub', 'height', 'weight'].forEach(k => {
+    if (oldProfile[k] !== undefined && oldProfile[k] !== '') appData.profile[k] = oldProfile[k];
+  });
+  appData.cycleState = { lastDayIndex: -1, lastDate: "", round: 1, cyclesDone: 0, restTaken: false };
   activeDayId = appData.days[0].id;
   saveData();
   renderStats();
   renderDayNav();
   renderWorkout();
   renderChecklist();
-  showToast('已重置为默认计划');
+  showToast('已重置为默认计划（训练记录已保留）');
 }
 
 // ========== 动作讲解数据（凯圣王 B站教学视频） ==========

@@ -1720,7 +1720,7 @@ function renderExerciseCard(ex, dayId, idx) {
   const already = todayRec.find(r => r.id === ex.id);
   const fmtRec = (r) => {
     const segs = r.segments || [{w: r.actualWeight, sets: r.sets, reps: r.reps}];
-    return segs.map(s => `${s.w}kg×${s.sets}×${s.reps}`).join('、');
+    return segs.map(s => `${s.w > 0 ? s.w + 'kg' : '自重'}×${s.sets}×${s.reps}`).join('、');
   };
 
   return `
@@ -1751,7 +1751,7 @@ function renderExerciseCard(ex, dayId, idx) {
       <div class="ex-record">
         <div class="rec-row">
           <span>上次: ${last ? `${fmtRec(last)} ${last.done ? '' : '(未完成)'}` : '无记录'}</span>
-          <span class="rec-suggest">💡本次建议: ${recW}kg</span>
+          <span class="rec-suggest">💡本次建议: ${recW > 0 ? recW + 'kg' : '自重'}</span>
         </div>
         ${already
           ? `<div class="rec-row"><span style="color:var(--accent-green);font-weight:600;">✅ 已记录: ${fmtRec(already)} ${already.done ? '· 完成' : '· 未完成'}</span></div>
@@ -1797,7 +1797,8 @@ function recordExerciseFromCard(dayId, exId) {
     const w = parseFloat(row.querySelector('.seg-w').value);
     const sets = parseInt(row.querySelector('.seg-s').value);
     const reps = parseInt(row.querySelector('.seg-r').value);
-    if (w && sets && reps) segs.push({ w, sets, reps });
+    // 注意：自重动作 w 可以是 0，不能用真值判断（0 在 JS 里是 falsy，会被过滤掉）
+    if (!isNaN(w) && w >= 0 && sets > 0 && reps > 0) segs.push({ w, sets, reps });
   });
   if (segs.length === 0) { showToast('请至少填写一行记录'); return; }
   const ex = appData.days.find(d => d.id === dayId).exercises.find(e => e.id === exId);

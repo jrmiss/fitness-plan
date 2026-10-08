@@ -1063,7 +1063,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 16,
+  version: 17,
   profile: {
     status: "恢复期",
     statusSub: "停练11天+感冒后 · 按张老师新手上限：每部位 12-15 组/周",
@@ -1080,10 +1080,11 @@ const DEFAULT_DATA = {
       id: "day1",
       name: "Day 1",
       title: "胸A：胸为主",
-      goal: "★停练 11 天后的第一周：所有重量先用 85%（卧推 55→47.5kg），第 2 周再回到 55kg。今天 13 组、约 50 分钟。每个部位每周封顶 15 组，不靠加量堆进步。",
+      goal: "★卧推降到 40kg 打磨动作中（动作稳了每次 +2.5kg 加回去）。今天 16 组、约 55 分钟。v17 加了 3 组肩推，把单次强度补齐 —— 肩现在 12 组/轮，进入最佳区间。",
       exercises: [
         { id: "ex1", name: "杠铃卧推", sets: 4, reps: "8", weight: 40, rest: "2.5分钟", tag: "主项", note: "握距 = 下放到底时小臂垂直于地面的位置；全握，下放时虎口发力；离心 2-3 秒、推起要快。★推之前先吸满气让胸腔饱满再推 —— 张老师第260集：气进不了胸腔就会耸肩，力全落在肩上、胸没感觉。★现在是打磨动作阶段，40kg 起，动作稳了每次 +2.5kg 加回去。" },
         { id: "ex2", name: "上斜哑铃卧推", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "主项", note: "上胸是第一短板，凳面角度 30°。下放 2-3 秒，到底停一下再推起来。" },
+        { id: "ex4", name: "坐姿哑铃推举", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "", note: "★v17 新增：Day1 原来只有 13 组，是全周最轻的一天。加 3 组肩推补上 —— 肩推一周两次（这里 + 胸B），肩从 9 组到 12 组，进入张老师说的最佳区间。坐姿不借力，最后一组留 2 次余力。" },
         { id: "ex17", name: "哑铃侧平举", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "中束。轻重量重形式，肘带手，别耸肩甩。" },
         { id: "ex5", name: "绳索下压", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "三头顺带（树干理论）。大臂夹紧不动，只动小臂。" }
       ]
@@ -1403,6 +1404,27 @@ function loadData() {
     appData.version = 16;
     saveData();
     showToast('卧推已降到 40kg 起步（打磨动作），动作稳了再往上加');
+  }
+  // v17 迁移：Day1 加 3 组肩推（13 -> 16 组），把单次强度补齐
+  // 理由：Day1 是全周最轻的一天；胸已封顶(14组/轮)不能加，但肩只有 9 组，有空间
+  if (!appData.version || appData.version < 17) {
+    const day1 = (appData.days || []).find(d => d.id === 'day1');
+    if (day1 && !(day1.exercises || []).some(e => e.name === '坐姿哑铃推举')) {
+      const exs = day1.exercises || [];
+      // 插在「上斜哑铃卧推」之后；找不到就插在第一个动作后面
+      let at = exs.findIndex(e => e.name.indexOf('上斜哑铃') !== -1);
+      at = (at === -1) ? 1 : at + 1;
+      exs.splice(at, 0, {
+        id: 'ex4', name: '坐姿哑铃推举', sets: 3, reps: '10', weight: 12.5,
+        rest: '90秒', tag: '',
+        note: '肩推一周两次（Day1 + 胸B），肩从 9 组到 12 组。坐姿不借力，最后一组留 2 次余力。'
+      });
+      const def = (DEFAULT_DATA.days || []).find(x => x.id === 'day1');
+      if (def) day1.goal = def.goal;
+    }
+    appData.version = 17;
+    saveData();
+    showToast('Day1 已加 3 组肩推（13 -> 16 组），肩容量到 12 组');
   }
   // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
   // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间

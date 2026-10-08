@@ -1063,7 +1063,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 14,
+  version: 15,
   profile: {
     status: "恢复期",
     statusSub: "停练11天+感冒后 · 按张老师新手上限：每部位 12-15 组/周",
@@ -1117,10 +1117,10 @@ const DEFAULT_DATA = {
       id: "day4",
       name: "Day 4",
       title: "胸B：上胸 + 肩",
-      goal: "本周第二次胸，重点补上胸。今天 16 组、约 55 分钟。肩的前束会被卧推带很多，所以这里给中束和后束。",
+      goal: "★本周第二次平板卧推 —— 平板卧推提到一周两次，涨得更快。今天 16 组、约 55 分钟。上胸靠两天的哑铃动作补（各 3 组）。",
       exercises: [
-        { id: "ex16", name: "上斜杠铃卧推", sets: 4, reps: "10", weight: 40, rest: "2分钟", tag: "主项", note: "上胸专项。角度 30-40°，下放到上胸位置（锁骨下两指），别让肩膀往前跑。留 2 次余力。" },
-        { id: "ex3", name: "器械夹胸", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "胸收尾。坐姿固定器械最容易找到胸的发力感。顶峰收缩停 1 秒，要「挤压」不要「甩」。" },
+        { id: "ex16", name: "杠铃卧推", sets: 4, reps: "10", weight: 47.5, rest: "2分钟", tag: "主项", note: "★本周第二次平板卧推 —— 平板一周两次，涨得更快。用 10 次的重量，比胸A 的 8 次轻一档，先从 47.5kg 起。呼吸前置：推之前先吸满气让胸腔饱满再推（气进不了胸腔就会耸肩、力全落在肩上）。留 2 次余力。" },
+        { id: "ex2", name: "上斜哑铃卧推", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "", note: "★上胸补位。平板卧推挪到本周第二次之后，上胸就只剩这两天的哑铃动作了，别省这一项。凳面角度 30°，下放 2-3 秒，到底停一下再推。" },
         { id: "ex4", name: "坐姿哑铃推举", sets: 3, reps: "10", weight: 12.5, rest: "90秒", tag: "", note: "肩前中束。坐姿不借力，最后一组留 2 次余力。能做到 12 次就上 15kg。" },
         { id: "ex17", name: "哑铃侧平举", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "中束。肘带手，别耸肩。" },
         { id: "ex18", name: "反向飞鸟", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "后束 + 体态。躯干稳定，用后束把手臂打开，不要甩。" }
@@ -1351,6 +1351,35 @@ function loadData() {
     appData = newData;
     saveData();
     showToast('计划已重排：每部位 12-15 组（张老师新手上限）' + (merged ? '，' + merged + ' 个重量已保留' : ''));
+  }
+  // v15 迁移：器械到位，胸B 的「上斜杠铃卧推」-> 「平板杠铃卧推」（把卧推频次提到一周两次）
+  // 副作用处理：上斜杠铃是胸B 唯一的上斜杠铃动作，换掉后上胸只剩胸A 那 3 组，
+  //             所以把胸B 的「器械夹胸」位换成「上斜哑铃卧推」，把上胸补回来。
+  if (!appData.version || appData.version < 15) {
+    const day4 = (appData.days || []).find(d => d.id === 'day4');
+    if (day4) {
+      const e16 = (day4.exercises || []).find(e => e.id === 'ex16');
+      if (e16) {
+        e16.name = '杠铃卧推';
+        e16.reps = '10';
+        e16.weight = 47.5;   // ★动作变了（上斜->平板），重量必须重置，不能沿用
+        e16.note = '本周第二次平板卧推。用 10 次的重量，比胸A 的 8 次轻一档，先从 47.5kg 起。呼吸前置：推之前先吸满气让胸腔饱满再推。留 2 次余力。';
+      }
+      const e3 = (day4.exercises || []).find(e => e.id === 'ex3');
+      if (e3) {
+        e3.id = 'ex2';                      // 跟胸A 的上斜哑铃共用 id（组次重量完全一样）
+        e3.name = '上斜哑铃卧推';
+        e3.sets = 3; e3.reps = '10';
+        e3.weight = 12.5;   // ★器械夹胸的重量（30kg）跟哑铃完全不是一个量级，必须重置
+        e3.rest = '90秒';
+        e3.note = '上胸补位。平板卧推挪到本周第二次之后，上胸就只剩这两天的哑铃动作了，别省这一项。凳面角度 30°，下放 2-3 秒。';
+      }
+      const def = (DEFAULT_DATA.days || []).find(x => x.id === 'day4');
+      if (def) day4.goal = def.goal;
+    }
+    appData.version = 15;
+    saveData();
+    showToast('胸B 已改为平板卧推（一周推两次）；上斜哑铃补回上胸');
   }
   // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
   // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间

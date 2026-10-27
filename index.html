@@ -1176,6 +1176,9 @@ function init() {
   }
   loadData();
   renderCycleBanner();
+  // 打开 app 直接停在今天该练的那一天（peek 不产生副作用）
+  const _tp = getTodayPlan(true);
+  if (_tp.day) activeDayId = _tp.day.id;
   renderStats();
   renderDayNav();
   renderWorkout();
@@ -1635,8 +1638,16 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// 两个日期（YYYY-MM-DD）之间相差几天
+function dayDiff(fromStr, toStr) {
+  if (!fromStr || !toStr) return 999;
+  const f = new Date(fromStr + 'T00:00:00');
+  const t = new Date(toStr + 'T00:00:00');
+  return Math.round((t.getTime() - f.getTime()) / 86400000);
+}
+
 // 返回今日训练信息：{ day: null(休息), dayIndex, isLight, round }
-function getTodayPlan() {
+function getTodayPlan(peek) {   // peek 参数保留兼容；本函数已无副作用
   const cs = appData.cycleState;
   const dayCount = appData.days.length;
   const restIndex = dayCount;   // 休息日索引固定等于训练日数量
@@ -1655,15 +1666,15 @@ function getTodayPlan() {
     return { day: appData.days[0], dayIndex: 0, isLight: cs.round === 2, round: cs.round, doneToday: false };
   }
   // 休息位：轮末（最后一个训练日之后）必休一天；中途可用 days[i].restAfter 指定（如腿日之后）
+  // ★ 用「上次训练到今天差几天」判断，不靠计数器 —— 反复打开 app、多次查询都不会算错
   const curDay = appData.days[cs.lastDayIndex] || {};
   const needRest = (cs.lastDayIndex === dayCount - 1) ? 1 : (curDay.restAfter ? 1 : 0);
-  const shownRest = cs.restShown || 0;
-  if (shownRest < needRest) {
-    cs.restShown = shownRest + 1;
-    saveData();
-    return { day: null, dayIndex: restIndex, isLight: false, round: cs.round, doneToday: false };
+  if (needRest > 0) {
+    const gap = dayDiff(cs.lastDate, todayStr());
+    if (gap >= 0 && gap <= needRest) {
+      return { day: null, dayIndex: restIndex, isLight: false, round: cs.round, doneToday: false };
+    }
   }
-  cs.restShown = 0;
   const next = (cs.lastDayIndex + 1) % dayCount;
   return { day: appData.days[next], dayIndex: next, isLight: cs.round === 2, round: cs.round, doneToday: false };
 }
@@ -1674,7 +1685,8 @@ function advanceCycle(dayIndex) {
   cs.lastDayIndex = dayIndex;
   cs.lastDate = todayStr();
   // 走完一整轮（所有训练日各一次）后计数；每 4 轮安排一次减载轮
-  cs.restShown = 0;   // 完成训练日 -> 下一次休息位需要重新展示
+  cs.restShown = 0;      // 完成训练日 -> 下一次休息位需要重新展示
+  cs.lastRestDate = "";  // 清掉休息日打卡，避免下个休息日被误判成同一天
   if (dayIndex === appData.days.length - 1) {
     cs.cyclesDone = (cs.cyclesDone || 0) + 1;
     cs.round = (cs.cyclesDone % 4 === 0) ? 2 : 1;
@@ -1791,7 +1803,7 @@ function renderCycleBanner() {
     <div>
       <div class="cycle-steps">${cycleStepsHtml()}</div>
       <div>📋 <strong>今日：${isRest ? '休息日' : `${stepName} · ${mode}`}</strong>${doneToday}
-        ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练，8 次都轻松就 +2.5kg。'}</div>
+        ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！（计划落后了想补练？点上面的 Day 标签选一天，记录后点完成即可）' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练，8 次都轻松就 +2.5kg。'}</div>
       <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
       <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
     </div>
@@ -2062,18 +2074,23 @@ function updateCompleteBtn() {
 }
 
 function completeToday() {
-  const plan = getTodayPlan();
+  const plan = getTodayPlan(true);
   if (plan.doneToday) { showToast('今日已记录过'); return; }
-  if (plan.dayIndex >= appData.days.length) { showToast('今天是休息日'); return; }
+  // ★ 以用户手动点的那一天为准（顶部 Day 标签）。这样计划算出来是休息日、
+  //   但用户想练某一天时，练完点完成也能正确推进，不会被拦。
+  const activeIdx = appData.days.findIndex(d => d.id === activeDayId);
+  const useIdx = activeIdx >= 0 ? activeIdx : plan.dayIndex;
+  if (useIdx < 0 || useIdx >= appData.days.length) { showToast('今天是休息日'); return; }
   const todayRec = (appData.history.find(h => h.date === todayStr()) || {}).exercises || [];
   if (todayRec.length === 0) { showToast('请先记录动作'); return; }
-  advanceCycle(plan.dayIndex);
+  advanceCycle(useIdx);
   renderCycleBanner();
   renderDayNav();
   renderWorkout();
-  const _curDay = appData.days[plan.dayIndex] || {};
-  const _nextIsRest = plan.dayIndex + 1 >= appData.days.length || _curDay.restAfter;
-  showToast(`已保存！明天是${_nextIsRest ? '休息日' : appData.days[plan.dayIndex + 1].name + ' ' + appData.days[plan.dayIndex + 1].title}`);
+  const _curDay = appData.days[useIdx] || {};
+  const _nextIsRest = useIdx + 1 >= appData.days.length || _curDay.restAfter;
+  const _manual = (activeIdx >= 0 && activeIdx !== plan.dayIndex) ? '（按你手动选的这份计划记录）' : '';
+  showToast(`已保存${_manual}！明天是${_nextIsRest ? '休息日' : appData.days[useIdx + 1].name + ' ' + appData.days[useIdx + 1].title}`);
 }
 
 // ========== EXERCISE CRUD ==========

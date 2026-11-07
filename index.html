@@ -1063,7 +1063,7 @@ body {
 <script>
 // ========== DEFAULT DATA ==========
 const DEFAULT_DATA = {
-  version: 22,
+  version: 23,
   profile: {
     status: "8×8 储备周期",
     statusSub: "卧推 1RM ≈ 70kg · 8×8 从 35kg 起（50%）· 一周加 1.25kg",
@@ -1089,12 +1089,14 @@ const DEFAULT_DATA = {
     {
       id: "day2",
       name: "Day 2",
-      title: "背A：宽度为主",
-      goal: "背 9 组正式组（引体算热身，不计组数）。8×8 期间背是主力，因为胸日几乎不占你的恢复额度。今天约 40 分钟。",
+      title: "背A：全套",
+      goal: "★背不再分宽度日和厚度日，两个背日都做这同一套（垂直拉 + 水平拉 + 后束）。背 12 组正式组，引体算热身不计。今天 18 组、约 50 分钟。两个背日之间隔着腿日和胸日，恢复够。",
       exercises: [
         { id: "ex6", name: "引体向上(辅助)", sets: 3, reps: "6-8", weight: 0, rest: "2分钟", tag: "主项", note: "当热身 / 技术练习用，每组留很多余力，不要拼到力竭 —— 力竭会毁掉后面所有拉的动作。做不满就上弹力带或辅助器械，宁可辅助拉满 6 个，也别硬做半程。" },
-        { id: "ex7", name: "宽距高位下拉", sets: 3, reps: "10", weight: 54, rest: "2分钟", tag: "主项", note: "握距略宽于肩，拉至锁骨。用背发力别用手臂拽。三组间休息 2-3 分钟，别 90 秒就上。" },
+        { id: "ex7", name: "宽距高位下拉", sets: 3, reps: "10", weight: 54, rest: "2分钟", tag: "主项", note: "握距略宽于肩，拉至锁骨。用背发力别用手臂拽。组间休息 2-3 分钟，别 90 秒就上 —— 休息不够是第三组变形最直接的原因。" },
         { id: "ex27", name: "器械单臂反手下拉", sets: 3, reps: "10", weight: 40, rest: "90秒", tag: "主项", note: "★反手握、单侧，专攻背阔下缘（腰侧那块）。身体别晃，想象用手肘往下往后拉。左右轮换，弱侧先做、弱侧做几个强侧做几个。" },
+        { id: "ex20", name: "T杆划船 / 坐姿窄距划船", sets: 3, reps: "8", weight: 0, rest: "2分钟", tag: "主项", note: "★这个位置一周两次都做，两个动作轮换着来。都是中背厚度（菱形肌 + 中斜方）。T杆：屈髋不是弯腰，躯干 45 度，背成直线，先夹肩胛再拉向下腹，下放数 3 秒。★T杆划船不练后束 —— 后束是面拉的活。" },
+        { id: "ex8", name: "面拉", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "★后束主力。拉至耳高度，双手外旋（结尾像拉弓），肩胛不要耸。8×8 期间胸日不练肩，后束只能靠这里和 Day6 的反向飞鸟。" },
         { id: "ex9", name: "哑铃弯举", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "二头顺带，大臂固定别晃。" }
       ]
     },
@@ -1125,12 +1127,14 @@ const DEFAULT_DATA = {
     {
       id: "day5",
       name: "Day 5",
-      title: "背B：厚度为主",
-      goal: "今天 6 组背 + 3 组后束。T 杆划船和坐姿窄距划船是同一个槽位，一周挑一个做 —— 它俩都是双手水平拉，同时做就是重复。约 40 分钟。",
+      title: "背B：全套",
+      goal: "★和 Day2 完全相同的一套动作 —— 背改成每次都练全，不再分宽度/厚度。练完这周背就结束了。今天 18 组、约 50 分钟。",
       exercises: [
-        { id: "ex20", name: "T杆划船 / 坐姿窄距划船", sets: 3, reps: "8", weight: 20, rest: "2分钟", tag: "主项", note: "★两个动作轮换，一周挑一个，都是中背厚度（菱形肌 + 中斜方）。T杆：屈髋不是弯腰，躯干 45 度，背成直线，先夹肩胛再拉向下腹，下放数 3 秒。★T杆划船不练后束 —— 后束是面拉的活。" },
-        { id: "ex31", name: "单臂器械划船", sets: 3, reps: "10", weight: 0, rest: "90秒", tag: "次项", note: "单侧动作，纠左右不平衡。胸贴住靠垫，肘往髋的方向拉，拉到背阔完全收紧再回放。" },
-        { id: "ex8", name: "面拉", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "★后束主力。拉至耳高度，双手外旋（结尾像拉弓），肩胛不要耸。固定每周都做，不参与轮换。" },
+        { id: "ex6", name: "引体向上(辅助)", sets: 3, reps: "6-8", weight: 0, rest: "2分钟", tag: "主项", note: "当热身用，留余力别力竭。做不满就上辅助。" },
+        { id: "ex7", name: "宽距高位下拉", sets: 3, reps: "10", weight: 54, rest: "2分钟", tag: "主项", note: "握距略宽于肩，拉至锁骨，用背发力。组间 2-3 分钟。" },
+        { id: "ex27", name: "器械单臂反手下拉", sets: 3, reps: "10", weight: 40, rest: "90秒", tag: "主项", note: "反手握单侧，专攻背阔下缘。左右轮换，弱侧先做。" },
+        { id: "ex20", name: "T杆划船 / 坐姿窄距划船", sets: 3, reps: "8", weight: 0, rest: "2分钟", tag: "主项", note: "和 Day2 轮换同一个槽位。中背厚度，先夹肩胛再拉。" },
+        { id: "ex8", name: "面拉", sets: 3, reps: "15", weight: 0, rest: "60秒", tag: "", note: "后束主力。拉至耳高度，双手外旋。" },
         { id: "ex9", name: "哑铃弯举", sets: 3, reps: "12", weight: 0, rest: "60秒", tag: "", note: "二头顺带。" }
       ]
     },
@@ -1569,6 +1573,27 @@ function loadData() {
     saveData();
     showToast('已升级 v22：卧推改 8×8（35kg 起），新增可选肩臂日');
   }
+  // v23 迁移（2026-11-07）：背日不再分宽度/厚度，两个背日都用同一套
+  //   只替换 day2 和 day5 的 exercises，其他天和训练记录一概不动
+  if (!appData.version || appData.version < 23) {
+    const oldW = {};
+    (appData.days || []).forEach(d => (d.exercises || []).forEach(e => {
+      if (e.name && e.weight > 0) oldW[e.name] = e.weight;
+    }));
+    const nd = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    ['day2', 'day5'].forEach(id => {
+      const oi = (appData.days || []).findIndex(d => d.id === id);
+      const ni = nd.days.findIndex(d => d.id === id);
+      if (oi >= 0 && ni >= 0) {
+        const ne = JSON.parse(JSON.stringify(nd.days[ni]));
+        ne.exercises.forEach(e => { if (!e.weight && oldW[e.name]) e.weight = oldW[e.name]; });
+        appData.days[oi] = ne;
+      }
+    });
+    appData.version = 23;
+    saveData();
+    showToast('背日已改成每次练全套（6 个动作）');
+  }
   // v9 迁移：3天三分化(练3休1) -> 5天增肌计划（推A/拉A/腿/推B/拉B + 休）
   // 目标改成「增肌/体型」，重点补上胸 + 背 + 肩；组次从 5×5 改成 8-12 次区间
   if (!appData.version || appData.version < 9) {
@@ -1850,7 +1875,7 @@ function renderCycleBanner() {
         <span style="font-size:10px;opacity:.45;margin-left:8px;font-weight:normal;">计划 v${DEFAULT_DATA.version}</span>
         ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！（计划落后了想补练？点上面的 Day 标签选一天，记录后点完成即可）' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练。'}</div>
       <div>卧推 <strong>8×8</strong>：一周两次（一次正常握 / 一次窄握收三指），组间 <strong>4-5 分钟</strong>，一周只加 <strong>1.25kg</strong>；卡住就转倒金字塔（每 2 组减 1.25-2.5kg，最多减 5kg）。</div>
-      <div>深蹲 4×8 每周 +2.5kg；硬拉线性 70% 3×5 → 80% 3×3 → 90% 2×2。<strong>同时只推两个计划</strong>，其他动作都只是维持。</div>
+      <div>深蹲 4×8 每周 +2.5kg；硬拉线性 70% 3×5 → 80% 3×3 → 90% 2×2。背每次练全套（6 动作 ×3 组）。<strong>同时只推两个计划</strong>。</div>
     </div>
   `;
 }

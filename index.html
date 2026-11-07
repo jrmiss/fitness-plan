@@ -1847,9 +1847,10 @@ function renderCycleBanner() {
     <div>
       <div class="cycle-steps">${cycleStepsHtml()}</div>
       <div>📋 <strong>今日：${isRest ? '休息日' : `${stepName} · ${mode}`}</strong>${doneToday}
-        ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！（计划落后了想补练？点上面的 Day 标签选一天，记录后点完成即可）' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练，8 次都轻松就 +2.5kg。'}</div>
-      <div>主动作<strong>线性递增</strong>：每周 +2.5kg，硬拉 +2.5%，推进 <strong>4-5 周后减载一周</strong>（80% 重量或容量减半）。</div>
-      <div><strong>不组组力竭</strong>：RPE 7-8，留 2 次余量；动作质量 &gt; 重量。</div>
+        <span style="font-size:10px;opacity:.45;margin-left:8px;font-weight:normal;">计划 v${DEFAULT_DATA.version}</span>
+        ${isRest ? '散步/拉伸/泡沫轴，睡眠 7-9 小时，肌肉在休息时生长！（计划落后了想补练？点上面的 Day 标签选一天，记录后点完成即可）' : plan.isLight ? '减载周：所有重量打 7 折，容量可砍一半，让身体回血。' : '正常周：按卡片重量练。'}</div>
+      <div>卧推 <strong>8×8</strong>：一周两次（一次正常握 / 一次窄握收三指），组间 <strong>4-5 分钟</strong>，一周只加 <strong>1.25kg</strong>；卡住就转倒金字塔（每 2 组减 1.25-2.5kg，最多减 5kg）。</div>
+      <div>深蹲 4×8 每周 +2.5kg；硬拉线性 70% 3×5 → 80% 3×3 → 90% 2×2。<strong>同时只推两个计划</strong>，其他动作都只是维持。</div>
     </div>
   `;
 }
